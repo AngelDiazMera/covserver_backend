@@ -7,7 +7,7 @@
     "ts:node": "ts-node src/index.ts",
     "clean": "del build",
     "build": "tsc -p",
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon",
     "start": "node build/src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
