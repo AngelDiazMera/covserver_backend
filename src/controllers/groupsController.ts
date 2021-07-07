@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 // Imported files
 import GroupsModel, { Groups } from '../models/Groups';
+import EnterpriseModel, { Enterprise } from '../models/Enterprise';
 
 // Get all the groups registered in the collection
 export const getGroups = async (req: Request, res: Response): Promise<void> => {
@@ -24,12 +25,25 @@ export const getGroupById = async (req: Request, res: Response): Promise<void> =
 };
 // Saves a group collection
 export const saveGroup = async (req: Request, res: Response): Promise<void> => {
-    const { name, code, members, enterpriseRef, visits } = req.body;
+    const { name, enterpriseRef } = req.body;
     try {
-        const groups: Groups = new GroupsModel({ name, code, members, enterpriseRef, visits });
+        const enterprise: Enterprise | null = await EnterpriseModel.findById(enterpriseRef);
+        if(enterprise == null){
+            res.json({msg: 'Enterprise ref is not correct'});
+            return;
+        }
+        const code: String = _generateSubgroupCode(enterprise.acronym);
+        const groups: Groups = new GroupsModel({ name, code, enterpriseRef });
         await groups.save();
         res.json({groups, msg: 'Group saved on database'});
     } catch (error) {
         res.json({ error: error }).status(500);
     }
+};
+// Generate subgroup code
+const _generateSubgroupCode = (acronym: String): String => {
+    const max: number = 9999;
+    const min: number = 1000;
+    const id: number = Math.random() * (max - min) + min;
+    return `${acronym}-${id.toString().slice(0,4)}`;
 }

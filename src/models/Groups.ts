@@ -3,13 +3,13 @@ import mongoose, { Schema, model } from "mongoose";
 export interface Groups extends mongoose.Document {
   name: String;
   code: String;
-  members: [
+  members?: [
     {
       userRef: String;
     }
   ];
   enterpriseRef: String;
-  visits: [
+  visits?: [
     {
       userRef: String;
       visitDate: Date;
