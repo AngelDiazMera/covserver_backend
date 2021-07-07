@@ -5,13 +5,13 @@ export interface Groups extends mongoose.Document {
   code: String;
   members: [
     {
-      userRef: mongoose.Schema.Types.ObjectId;
+      userRef: String;
     }
   ];
-  enterpriseRef: mongoose.Schema.Types.ObjectId;
+  enterpriseRef: String;
   visits: [
     {
-      userRef: mongoose.Schema.Types.ObjectId;
+      userRef: String;
       visitDate: Date;
     }
   ];
@@ -39,4 +39,4 @@ const groupsSchema: Schema = new Schema({
   ],
 });
 
-export default model<Groups>("Groups", groupsSchema);
+export default model<Groups>('Groups', groupsSchema);
