@@ -1,8 +1,11 @@
 import {Router} from 'express';
 
-import { getGroups, saveGroup, getGroupById } from '../controllers/groupsController';
+import { getGroups, saveGroup, getGroupById, getQR } from '../controllers/groupsController';
 
 const router: Router = Router();
+
+router.route('/qr')
+    .post(getQR);    
 
 router.route('/')
     .get(getGroups) 

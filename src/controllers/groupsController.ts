@@ -1,5 +1,6 @@
 // Imported packages
 import { Request, Response } from 'express';
+const qrcode: any =  require('qrcode');
 // Imported files
 import GroupsModel, { Groups } from '../models/Groups';
 import EnterpriseModel, { Enterprise } from '../models/Enterprise';
@@ -47,3 +48,16 @@ const _generateSubgroupCode = (acronym: String): String => {
     const id: number = Math.random() * (max - min) + min;
     return `${acronym}-${id.toString().slice(0,4)}`;
 }
+//Get QR CODE
+export const getQR = async (req: Request, res: Response): Promise<void> => {
+    const { code } = req.body;
+    const dtqr:String = code;
+    try {
+        const QR: any = await qrcode.toDataURL(dtqr);
+        res.json({ qr_base64:QR });
+    } catch (error) {
+        res.json({ error: error }).status(500);
+    }
+};
+
+
