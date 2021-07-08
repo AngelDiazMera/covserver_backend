@@ -11,7 +11,7 @@ import groupsRoutes from './routes/groups.routes';
 const app: Application = express();
 
 // Settings
-app.set('port', process.env.PORT || 3000); // Port
+app.set('port', process.env.PORT || 5000); // Port
 
 app.set('views', path.join(__dirname, 'views')); // path of views for hbs
 app.engine('.hbs', exphbs({ // Handlebars configuration
