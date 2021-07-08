@@ -15,6 +15,7 @@ export interface Groups extends mongoose.Document {
       visitDate: Date;
     }
   ];
+  isMember?: Boolean;
 }
 
 // Schema definition for database
@@ -37,6 +38,7 @@ const groupsSchema: Schema = new Schema({
       visitDate: { type: Date, required: true },
     },
   ],
+  isMember: { type: Boolean },
 });
 
 export default model<Groups>('Groups', groupsSchema);
