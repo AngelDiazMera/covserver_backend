@@ -7,6 +7,7 @@ import path from 'path';
 import exampleRoutes from './routes/example.routes';
 import enterpriseRoutes from './routes/enterprise.routes';
 import groupsRoutes from './routes/groups.routes';
+import userRoutes from './routes/user.routes';
 
 const app: Application = express();
 
@@ -30,6 +31,7 @@ app.use(express.urlencoded({extended: false})); // Interpreter url requests
 app.use('/example', exampleRoutes);
 app.use('/enterprise', enterpriseRoutes);
 app.use('/groups', groupsRoutes);
+app.use('/user', userRoutes);
 
 // Static files: everything that a browser can use
 app.use(express.static(path.join(__dirname, 'public')));
