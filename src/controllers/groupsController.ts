@@ -26,15 +26,16 @@ export const getGroupById = async (req: Request, res: Response): Promise<void> =
 };
 // Saves a group collection
 export const saveGroup = async (req: Request, res: Response): Promise<void> => {
-    const { name, enterpriseRef, isMember } = req.body;
+    const { name, enterpriseRef } = req.body;
     try {
         const enterprise: Enterprise | null = await EnterpriseModel.findById(enterpriseRef);
         if(enterprise == null){
             res.json({msg: 'Enterprise ref is not correct'});
             return;
         }
-        const code: String = _generateSubgroupCode(enterprise.acronym, isMember);
-        const groups: Groups = new GroupsModel({ name, code, enterpriseRef, isMember });
+        const memberCode: String = _generateSubgroupCode(enterprise.acronym, true);
+        const visitorCode: String = _generateSubgroupCode(enterprise.acronym, false);
+        const groups: Groups = new GroupsModel({ name, memberCode, visitorCode, enterpriseRef });
         await groups.save();
         res.json({groups, msg: 'Group saved on database'});
     } catch (error) {

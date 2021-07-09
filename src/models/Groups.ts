@@ -2,7 +2,8 @@ import mongoose, { Schema, model } from "mongoose";
 
 export interface Groups extends mongoose.Document {
   name: String;
-  code: String;
+  memberCode: String;
+  visitorCode: String;
   members?: [
     {
       userRef: String;
@@ -15,13 +16,13 @@ export interface Groups extends mongoose.Document {
       visitDate: Date;
     }
   ];
-  isMember?: Boolean;
 }
 
 // Schema definition for database
 const groupsSchema: Schema = new Schema({
   name: { type: String },
-  code: { type: String },
+  memberCode: { type: String },
+  visitorCode: { type: String },
   members: [
     {
       userRef: { type: Schema.Types.ObjectId, required: true },
@@ -38,7 +39,6 @@ const groupsSchema: Schema = new Schema({
       visitDate: { type: Date, required: true },
     },
   ],
-  isMember: { type: Boolean },
 });
 
 export default model<Groups>('Groups', groupsSchema);
