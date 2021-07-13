@@ -4,8 +4,12 @@ import ExampleModel, { Example } from '../models/Example';
 
 
 export const getExamples = async (req: Request, res: Response): Promise<void> => {
-    const examples: Example[] = await ExampleModel.find();
-    res.json({examples});
+    try {
+        const examples: Example[] = await ExampleModel.find();
+        res.json({examples});
+    } catch (error) {
+        res.json({error: error}).status(500);
+    }
 };
 
 export const saveExample = async (req: Request, res: Response): Promise<void> => {

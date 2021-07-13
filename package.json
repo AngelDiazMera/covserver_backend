@@ -7,7 +7,7 @@
     "ts:node": "ts-node src/index.ts",
     "clean": "del build",
     "build": "tsc -p",
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon",
     "start": "node build/src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,11 +17,13 @@
   "dependencies": {
     "@types/express-handlebars": "^5.3.0",
     "@types/mongoose": "^5.11.97",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.2",
     "mongoose": "^5.13.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.11",
     "@types/express": "^4.17.12",
     "@types/node": "^16.0.0",
     "nodemon": "^2.0.9",
