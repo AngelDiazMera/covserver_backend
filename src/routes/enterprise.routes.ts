@@ -6,8 +6,6 @@ import { getEnterprises, getMyEnterprise, isEmailUnique, signUp, signIn } from '
 const router: Router = Router();
 const auth = passport.authenticate('jwt', { session: false})
 
-console.log(auth)
-
 // Authentication routes
 router.post('/signup', signUp);
 router.post('/signin', signIn);

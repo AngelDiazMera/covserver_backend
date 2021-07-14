@@ -48,7 +48,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> => 
     try {
         const newEnterprise: Enterprise = new EnterpriseModel({ name, acronym, access });
         await newEnterprise.save();
-        return res.status(201).json({enterprise, msg: 'La empresa ha sido almacenada con éxito'});
+        return res.status(201).json({newEnterprise, msg: 'La empresa ha sido almacenada con éxito'});
     } catch (error) {
         return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
