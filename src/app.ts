@@ -7,6 +7,7 @@ import path from 'path';
 // imported files
 import exampleRoutes from './routes/example.routes';
 import enterpriseRoutes from './routes/enterprise.routes';
+import groupsRoutes from './routes/groups.routes';
 
 const app: Application = express();
 
@@ -30,6 +31,7 @@ app.use(cors());
 // Routes: routes from the api
 app.use('/example', exampleRoutes);
 app.use('/enterprise', enterpriseRoutes);
+app.use('/groups', groupsRoutes);
 
 // Static files: everything that a browser can use
 app.use(express.static(path.join(__dirname, 'public')));
