@@ -1,14 +1,17 @@
 // Imported packages
-import exphbs from 'express-handlebars';
-import express, {Application} from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import path from 'path';
+import exphbs from 'express-handlebars'
+import express, {Application} from 'express'
+import cors from 'cors'
+import morgan from 'morgan'
+import path from 'path'
+import passport from 'passport'
 
 // imported files
-import exampleRoutes from './routes/example.routes';
-import enterpriseRoutes from './routes/enterprise.routes';
+
+import { enterpriseAuth } from './middlewares/passport'
+import enterpriseRoutes from './routes/enterprise.routes'
 import groupsRoutes from './routes/groups.routes';
+
 
 // Initializations
 const app: Application = express();
@@ -30,9 +33,10 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json()); // Uses JSON to send and retrieve data
 app.use(express.urlencoded({extended: false})); // Interpreter url requests
+app.use(passport.initialize()); // Uses passport
+passport.use(enterpriseAuth); // Passport uses the configuration from the middleware
 
 // Routes: routes from the api
-app.use('/example', exampleRoutes);
 app.use('/enterprise', enterpriseRoutes);
 app.use('/groups', groupsRoutes);
 
