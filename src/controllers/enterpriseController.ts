@@ -48,7 +48,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> => 
     try {
         const newEnterprise: Enterprise = new EnterpriseModel({ name, acronym, access });
         await newEnterprise.save();
-        return res.status(201).json({newEnterprise, msg: 'La empresa ha sido almacenada con éxito'});
+        return res.status(200).json({newEnterprise, msg: 'La empresa ha sido almacenada con éxito'});
     } catch (error) {
         return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
@@ -96,5 +96,22 @@ export const isEmailUnique = async (req: Request, res: Response): Promise<void> 
         
     } catch (error) {
         res.json({ error: error , msg: 'Hubo un problema con la consulta'}).status(500);
+    }
+}
+// Update data
+export const updateEnterprise = async (req: Request, res: Response): Promise<void> => {
+    if (!req.body) {
+        res.json({msg: 'Los campos no pueden estar vacios!'}).status(400);
+    }
+    const entReq = req.user as Enterprise;
+    try{
+        const enterprise: Enterprise | null = await EnterpriseModel.findByIdAndUpdate(entReq.id,req.body, { useFindAndModify: false });
+        if (!enterprise) {
+            res.status(404).json({
+                message: `No se puede actualizar el dato con el id=${entReq.id}`
+            });
+        } else res.json({ message: "Datos actualizados exitosamente!" });
+    } catch (error){
+        res.json({error:error}).status(500);
     }
 }

@@ -1,7 +1,7 @@
 import {Router} from 'express'
 import passport from 'passport'
 
-import { getEnterprises, getMyEnterprise, isEmailUnique, signUp, signIn } from '../controllers/enterpriseController'
+import { getEnterprises, getMyEnterprise, updateEnterprise, isEmailUnique, signUp, signIn } from '../controllers/enterpriseController'
 
 const router: Router = Router();
 const auth = passport.authenticate('jwt', { session: false})
@@ -15,7 +15,8 @@ router.route('/')
     .get(auth, getEnterprises);
     
 router.route('/mine')
-    .get(auth, getMyEnterprise);
+    .get(auth, getMyEnterprise)
+    .post(auth, updateEnterprise);
 
 // Routes which do not need authentication
 router.route('/email_validation/:email')
