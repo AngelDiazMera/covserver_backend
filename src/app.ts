@@ -11,6 +11,7 @@ import passport from 'passport'
 import { enterpriseAuth } from './middlewares/passport'
 import enterpriseRoutes from './routes/enterprise.routes'
 import groupsRoutes from './routes/groups.routes';
+import userRoutes from './routes/user.routes';
 
 
 // Initializations
@@ -39,6 +40,7 @@ passport.use(enterpriseAuth); // Passport uses the configuration from the middle
 // Routes: routes from the api
 app.use('/enterprise', enterpriseRoutes);
 app.use('/groups', groupsRoutes);
+app.use('/user', userRoutes);
 
 // Static files: everything that a browser can use
 app.use(express.static(path.join(__dirname, 'public')));
