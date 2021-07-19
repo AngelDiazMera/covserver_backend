@@ -23,9 +23,9 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 };
 //Saves a collection
 export const saveUser = async (req: Request, res: Response): Promise<void>=>{
-    const { name, lastName, gender, access } = req.body;
+    const { name, lastName, isFamale, access } = req.body;
     try {
-        const user: User = new UserModel({ name, lastName, gender, access });
+        const user: User = new UserModel({ name, lastName, isFamale, access });
         await user.save();
         res.json({user, msg: 'User saved on database'});
     } catch (error) {

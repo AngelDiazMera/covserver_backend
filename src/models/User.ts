@@ -3,7 +3,7 @@ import mongoose, { Schema, model } from "mongoose";
 export interface User extends mongoose.Document{
     name: String
     lastName: String,
-    gender: String,
+    isFamale: Boolean,
     access: {
         email: String,
         password: String
@@ -19,8 +19,8 @@ const userSchema: Schema = new Schema({
         type: String,
         required: true
     },
-    gender:{
-        type: String,
+    isFamale:{
+        type: Boolean,
         required: true
     },
     access:{
