@@ -105,10 +105,10 @@ export const updateEnterprise = async (req: Request, res: Response): Promise<voi
     }
     const entReq = req.user as Enterprise;
     try{
-        const enterprise: Enterprise | null = await EnterpriseModel.findByIdAndUpdate(req.body._id,req.body, { useFindAndModify: false });
+        const enterprise: Enterprise | null = await EnterpriseModel.findByIdAndUpdate(entReq.id,req.body, { useFindAndModify: false });
         if (!enterprise) {
             res.status(404).json({
-                message: `No se puede actualizar el dato con el id: ${req.body.id}`
+                message: `No se puede actualizar el dato con el id: ${entReq.id}`
             });
         } else res.json({ message: "Datos actualizados exitosamente!" });
     } catch (error){
