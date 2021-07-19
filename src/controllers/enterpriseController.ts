@@ -8,7 +8,10 @@ import config from '../config/config'
 // Get all the enterprises registered in the collection
 export const getEnterprises = async (req: Request, res: Response): Promise<void> => {
     try {
-        const enterprises: Enterprise[] = await EnterpriseModel.find();
+        const enterprises: Enterprise[] = await EnterpriseModel.find(
+            {}, // Search all (no conditions)
+            { name: 1, acronym:1, email: { $concat: ['$access.email'] } , _id:0 } 
+        );
         res.json({ enterprises });
     } catch (error) {
         res.json({ error: error }).status(500);
@@ -18,7 +21,7 @@ export const getEnterprises = async (req: Request, res: Response): Promise<void>
 export const getMyEnterprise = async (req: Request, res: Response): Promise<Response> => {
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
 
-    const entReq = req.user as Enterprise;
+    const entReq = req.user as Enterprise; // user from passport
 
     try {
         const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
