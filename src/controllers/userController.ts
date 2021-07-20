@@ -21,14 +21,24 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
         res.json({ error: error }).status(500);
     }
 };
+
 //Saves a collection
-export const saveUser = async (req: Request, res: Response): Promise<void>=>{
+export const signUp = async (req: Request, res: Response): Promise<Response> =>{
+    // Validate if data is completed
+    if (!req.body.name || !req.body.lastName || req.body.isFamale === undefined || !req.body.access.password || !req.body.access.email) 
+        return res.status(400).json({msg: 'Por favor enva nombre, apellidos, género, correo y contraseña'});
+    
+    // Validate if a register with an specified email already exists
+    const user = await UserModel.findOne({'access.email': req.body.access.email});
+    if (user)
+        return res.status(400).json({msg: 'El usuario con ese email ya ha sido registrado'});
+    // Save the new user to database
     const { name, lastName, isFamale, access } = req.body;
     try {
-        const user: User = new UserModel({ name, lastName, isFamale, access });
-        await user.save();
-        res.json({user, msg: 'User saved on database'});
+        const newUser: User = new UserModel({ name, lastName, isFamale, access });
+        await newUser.save();
+        return res.status(200).json({newUser, msg: 'El usuario ha sido almacenada con éxito'});
     } catch (error) {
-        res.json({ error: error }).status(500);
+        return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
 }
