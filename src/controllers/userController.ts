@@ -28,7 +28,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 //Saves a collection
 export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     // Validate if data is completed
-    if (!req.body.name || !req.body.lastName || req.body.isFamale === undefined || !req.body.access.password || !req.body.access.email) 
+    if (!req.body.name || !req.body.lastName || !req.body.gender || !req.body.access.password || !req.body.access.email) 
         return res.status(400).json({msg: 'Por favor enva nombre, apellidos, género, correo y contraseña'});
     
     // Validate if a register with an specified email already exists
@@ -36,9 +36,9 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     if (user)
         return res.status(400).json({msg: 'El usuario con ese email ya ha sido registrado'});
     // Save the new user to database
-    const { name, lastName, isFamale, access } = req.body;
+    const { name, lastName, gender, access } = req.body;
     try {
-        const newUser: User = new UserModel({ name, lastName, isFamale, access });
+        const newUser: User = new UserModel({ name, lastName, gender, access });
         await newUser.save();
         return res.status(200).json({newUser, msg: 'El usuario ha sido almacenada con éxito'});
     } catch (error) {
@@ -71,7 +71,7 @@ export const signIn = async (req: Request, res: Response): Promise<Response> => 
                 email: user.access.email, 
                 name: user.name, 
                 lastName: user.lastName,
-                isFemale: user.isFamale
+                gender: user.gender
             }});
     
     return res.status(400).json({msg: 'El correo o la contraseña son incorrectas'});
@@ -91,7 +91,7 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
             email: user.access.email, 
             name: user.name, 
             lastName: user.lastName,
-            isFemale: user.isFamale
+            gender: user.gender
         });
     } catch (error) {
         return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);

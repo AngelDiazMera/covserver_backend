@@ -1,16 +1,22 @@
 import mongoose, { Schema, model } from "mongoose"
 import bcrypt from 'bcrypt'
 
+enum Gender {
+    male = 'male',
+    female = 'female',
+    other = 'other'
+};
 export interface User extends mongoose.Document{
     name: String;
     lastName: String;
-    isFamale: Boolean;
+    gender: Gender;
     access: {
         email: String;
         password: String;
     };
     comparePassword: (password: String) => Promise<boolean>;
 };
+
 //Schema definition for database
 const userSchema: Schema<User> = new Schema({
     name:{
@@ -21,8 +27,12 @@ const userSchema: Schema<User> = new Schema({
         type: String,
         required: true
     },
-    isFamale:{
-        type: Boolean,
+    gender:{
+        type: String,
+        enum: {
+            values: ['male', 'female', 'other'],
+            message: '{VALUE} no es soportado'
+        },
         required: true
     },
     access:{
