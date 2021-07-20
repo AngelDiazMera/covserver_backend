@@ -1,7 +1,10 @@
 //import packages
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken'
 //Import files
 import UserModel,{User} from '../models/User';
+import config from '../config/config';
+
 // Get all the users registered in the collection
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -41,4 +44,56 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     } catch (error) {
         return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
-}
+};
+
+// Private: Creates a jwt
+const _createToken = (user: User) => {
+    return jwt.sign({id: user.id, email: user.access.email}, config.jwtSecret,{
+        expiresIn: 14 * 24 * 60 * 60 // Expires in 14 days
+    });
+};
+
+// Generarte the JWT to sign to the app
+export const signIn = async (req: Request, res: Response): Promise<Response> => {
+    if (!req.body.password || !req.body.email)
+        return res.status(400).json({msg: 'Por favor envíe correo electrónico y contraseña'});
+
+    // Validate if a register with an specified email already exists
+    const user: User | null = await UserModel.findOne({'access.email': req.body.email});
+    if (!user)
+        return res.status(400).json({msg: 'El usuario no existe'});
+    // If request password and user password is the same, creates the auth token
+    const isMatch = await user.comparePassword(req.body.password);
+    if (isMatch)
+        return res.status(200).json({
+            token: _createToken(user), 
+            user: {
+                email: user.access.email, 
+                name: user.name, 
+                lastName: user.lastName,
+                isFemale: user.isFamale
+            }});
+    
+    return res.status(400).json({msg: 'El correo o la contraseña son incorrectas'});
+};
+
+
+export const getMyUser = async (req: Request, res: Response): Promise<Response> => {
+    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+
+    const userReq = req.user as User; // user from passport
+
+    try {
+        const user: User | null = await UserModel.findById(userReq.id);
+        if (!user) return res.status(404).json({msg: 'No se pudo encontrar la empresa'});
+
+        return res.json({
+            email: user.access.email, 
+            name: user.name, 
+            lastName: user.lastName,
+            isFemale: user.isFamale
+        });
+    } catch (error) {
+        return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
+    }
+};
