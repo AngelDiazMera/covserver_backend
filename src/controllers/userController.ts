@@ -24,8 +24,12 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
         res.json({ error: error }).status(500);
     }
 };
+// Private: Creates a jwt
+const _createToken = (user: User) => {
+    return jwt.sign({id: user.id, email: user.access.email}, config.jwtSecret);
+};
 
-//Saves a collection
+// Saves an user and returns the user and the session
 export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     // Validate if data is completed
     if (!req.body.name || !req.body.lastName || !req.body.gender || !req.body.access.password || !req.body.access.email) 
@@ -40,17 +44,14 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     try {
         const newUser: User = new UserModel({ name, lastName, gender, access });
         await newUser.save();
-        return res.status(200).json({newUser, msg: 'El usuario ha sido almacenada con éxito'});
+        return res.status(200).json({
+            newUser, 
+            msg: 'El usuario ha sido almacenada con éxito', 
+            token: _createToken(newUser), 
+        });
     } catch (error) {
         return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
-};
-
-// Private: Creates a jwt
-const _createToken = (user: User) => {
-    return jwt.sign({id: user.id, email: user.access.email}, config.jwtSecret,{
-        expiresIn: 14 * 24 * 60 * 60 // Expires in 14 days
-    });
 };
 
 // Generarte the JWT to sign to the app
