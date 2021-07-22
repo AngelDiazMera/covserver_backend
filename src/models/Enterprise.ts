@@ -1,16 +1,18 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model, Document } from "mongoose"
+import bcrypt from 'bcrypt'
 
-export interface Enterprise extends mongoose.Document {
-    name: String,
-    acronym: String,
+export interface Enterprise extends Document {
+    name: String;
+    acronym: String;
     access: {
-        email: String,
-        password: String
-    },
+        email: String;
+        password: String;
+    };
+    comparePassword: (password: String) => Promise<boolean>;
 };
 
 // Schema definition for database
-const enterpriseSchema: Schema = new Schema({
+const enterpriseSchema: Schema<Enterprise> = new Schema({
     name: {
         type: String,
         required: true
@@ -23,7 +25,9 @@ const enterpriseSchema: Schema = new Schema({
         email: {
             type: String,
             required: true,
-            unique:true 
+            unique:true,
+            lowercase: true,
+            trim: true
         },
         password: {
             type: String,
@@ -31,5 +35,10 @@ const enterpriseSchema: Schema = new Schema({
         }
     }
 });
+
+// This function allows to compare the requested pasword with the pasword stored in database
+enterpriseSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
+    return await bcrypt.compare(password, String(this.access.password));
+}
 
 export default model<Enterprise>('Enterprise', enterpriseSchema);
