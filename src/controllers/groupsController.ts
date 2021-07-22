@@ -61,7 +61,7 @@ export const getQR = async (req: Request, res: Response): Promise<void> => {
         const QR: any = await qrcode.toDataURL(dtqr);
         res.json({ qr_base64:QR });
     } catch (error) {
-        res.json({ error: error }).status(500);
+        res.json({ error: error , msg: "Hubo un error"}).status(500);
     }
 };
 

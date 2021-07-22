@@ -111,10 +111,10 @@ export const updateEnterprise = async (req: Request, res: Response): Promise<voi
         const enterprise: Enterprise | null = await EnterpriseModel.findByIdAndUpdate(entReq.id,req.body, { useFindAndModify: false });
         if (!enterprise) {
             res.status(404).json({
-                message: `No se puede actualizar el dato con el id: ${entReq.id}`
+                msg: `No se puede actualizar el dato con el id: ${entReq.id}`
             });
-        } else res.json({ message: "Datos actualizados exitosamente!" });
+        } else res.json({ msg: "Datos actualizados exitosamente!" });
     } catch (error){
-        res.status(500).json({error});
+        res.status(500).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
 }
