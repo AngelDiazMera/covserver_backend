@@ -8,7 +8,10 @@ import GroupsModel, { Groups } from '../models/Groups';
 // Get all the groups registered in the collection
 export const getGroups = async (req: Request, res: Response): Promise<void> => {
     try {
-        const groups: Groups[] = await GroupsModel.find();
+        const groups: Groups[] = await GroupsModel.find(
+            {},
+            {name:1, memberCode:1, visitorCode:1, _id:0}
+        );
         res.json({ groups });
     } catch (error) {
         res.json({ error: error }).status(500);
