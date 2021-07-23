@@ -45,7 +45,12 @@ const userSchema: Schema<User> = new Schema({
             type: String,
             required: true
         }
-    }
+    },
+    mobileTokens: [{
+        type: String,
+        required: true,
+        unique: true
+    }]
 });
 
 // This function allows to compare the requested pasword with the pasword stored in database
