@@ -8,10 +8,7 @@ import GroupsModel, { Groups } from '../models/Groups';
 // Get all the groups registered in the collection
 export const getGroups = async (req: Request, res: Response): Promise<void> => {
     try {
-        const groups: Groups[] = await GroupsModel.find(
-            {},
-            {name:1, memberCode:1, visitorCode:1, _id:0}
-        );
+        const groups: Groups[] = await GroupsModel.find();
         res.json({ groups });
     } catch (error) {
         res.json({ error: error }).status(500);
@@ -29,7 +26,9 @@ export const getGroupById = async (req: Request, res: Response): Promise<void> =
 };
 // Saves a group collection
 export const saveGroup = async (req: Request, res: Response): Promise<void> => {
-    const { name, enterpriseRef } = req.body;
+    const { name } = req.body;
+    const entReq = req.user as Enterprise;
+    const enterpriseRef = entReq.id;
     try {
         const enterprise: Enterprise | null = await EnterpriseModel.findById(enterpriseRef);
         if(enterprise == null){
