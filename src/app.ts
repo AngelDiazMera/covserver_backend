@@ -8,7 +8,7 @@ import passport from 'passport'
 
 // imported files
 
-import { enterpriseAuth, userAuth } from './middlewares/passport'
+import Authentication from './middlewares/passport'
 import enterpriseRoutes from './routes/enterprise.routes'
 import groupsRoutes from './routes/groups.routes';
 import userRoutes from './routes/user.routes';
@@ -35,8 +35,7 @@ app.use(cors());
 app.use(express.json()); // Uses JSON to send and retrieve data
 app.use(express.urlencoded({extended: false})); // Interpreter url requests
 app.use(passport.initialize()); // Uses passport
-passport.use(enterpriseAuth); // Passport uses the configuration from the middleware
-passport.use(userAuth); // Passport uses the configuration from the middleware
+passport.use(Authentication); // Passport uses the configuration from the middleware
 
 // Routes: routes from the api
 app.use('/enterprise', enterpriseRoutes);
