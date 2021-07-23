@@ -62,7 +62,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> => 
 
 // Private: Creates a jwt
 const _createToken = (enterprise: Enterprise) => {
-    return jwt.sign({id: enterprise.id, email: enterprise.access.email}, config.jwtSecret,{
+    return jwt.sign({id: enterprise.id, email: enterprise.access.email, type: 'enterprise'}, config.jwtSecret,{
         expiresIn: 14 * 24 * 60 * 60 // Expires in 14 days
     });
 }
