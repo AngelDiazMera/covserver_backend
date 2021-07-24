@@ -1,7 +1,9 @@
 import {Strategy, ExtractJwt, StrategyOptions} from 'passport-jwt';
 
 import config from '../config/config'
-import EnterpriseModel, { Enterprise } from '../models/Enterprise';
+import authorization from './roles';
+import { Enterprise } from '../models/Enterprise'
+import { User  } from '../models/User'
 
 const opts: StrategyOptions = {
     // Authorization: Bearer <token>
@@ -10,9 +12,10 @@ const opts: StrategyOptions = {
 }
 
 // The payload is the data object inside our jwt
-export const enterpriseAuth = new Strategy(opts, async (payload, done) => {
+const enterpriseAuth = new Strategy(opts, async (payload, done) => {
     try {
-        const enterprise:Enterprise | null = await EnterpriseModel.findById(payload.id);
+        const payloadModel = authorization[payload.type];
+        const enterprise:Enterprise | User | null = await payloadModel.findById(payload.id);
         // If user is matched, return the enterprise. Else, return a false
         // Null is for the error
         if (enterprise) {
@@ -23,3 +26,5 @@ export const enterpriseAuth = new Strategy(opts, async (payload, done) => {
         console.log(error)
     }
 });
+
+export default enterpriseAuth;
