@@ -1,8 +1,11 @@
 // Imported packages
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
+const {ObjectId} = mongoose.Types;
 // Imported files
 import EnterpriseModel, { Enterprise } from '../models/Enterprise'
+import { Groups } from '../models/Groups';
 import config from '../config/config'
 
 // Get all the enterprises registered in the collection
@@ -118,3 +121,34 @@ export const updateEnterprise = async (req: Request, res: Response): Promise<voi
         res.status(500).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
 }
+
+// Get all the groups registered in the enterprise
+export const getGroups = async (req: Request, res: Response): Promise<Response> => {
+    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+    const entReq = req.user as Enterprise; // user from passport
+    try {
+        const groups: any[] = await EnterpriseModel.aggregate([
+            {
+                $match: {"_id": ObjectId(entReq.id)}
+                
+            },
+            {
+                $lookup:
+                {
+                    from: "groups",
+                    localField: "_id",
+                    foreignField: "enterpriseRef",
+                    as: "groups"
+                }
+           },
+           {
+               $project: {_id: 0, "groups.name": 1, "groups.memberCode": 1, "groups.visitorCode": 1}
+           }
+         ]
+        );
+        if (groups.length === 0) return res.status(400).json({msg: 'Esta empresa no tiene grupos aún'})
+        return res.json({ groups:groups[0].groups });
+    } catch (error) {
+        return res.json({ error: error }).status(500);
+    }
+};

@@ -26,7 +26,9 @@ export const getGroupById = async (req: Request, res: Response): Promise<void> =
 };
 // Saves a group collection
 export const saveGroup = async (req: Request, res: Response): Promise<void> => {
-    const { name, enterpriseRef } = req.body;
+    const { name } = req.body;
+    const entReq = req.user as Enterprise;
+    const enterpriseRef = entReq.id;
     try {
         const enterprise: Enterprise | null = await EnterpriseModel.findById(enterpriseRef);
         if(enterprise == null){
