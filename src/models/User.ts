@@ -6,10 +6,17 @@ enum Gender {
     female = 'female',
     other = 'other'
 };
+
+enum HealthCondition {
+    lowRisk = 'Riesgo bajo',
+    mediumRisk = 'Riesgo medio',
+    infected = 'Infectado'   
+}
 export interface User extends mongoose.Document{
     name: String;
     lastName: String;
     gender: Gender;
+    healthCondition: HealthCondition;
     access: {
         email: String;
         password: String;
@@ -31,6 +38,14 @@ const userSchema: Schema<User> = new Schema({
         type: String,
         enum: {
             values: ['male', 'female', 'other'],
+            message: '{VALUE} no es soportado'
+        },
+        required: true
+    },
+    healthCondition:{
+        type: String,
+        enum: {
+            values: ['Riesgo bajo', 'Riesgo medio', 'Infectado'],
             message: '{VALUE} no es soportado'
         },
         required: true

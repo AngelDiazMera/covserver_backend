@@ -98,7 +98,8 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
             email: user.access.email, 
             name: user.name, 
             lastName: user.lastName,
-            gender: user.gender
+            gender: user.gender,
+            healthCondition: user.healthCondition
         });
     } catch (error) {
         return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
@@ -127,6 +128,6 @@ export const getSymptoms = async (req: Request, res: Response): Promise<Response
         if (symptoms.length === 0) return res.status(400).json({msg: 'El usuario no tiene síntomas'})
         return res.json({ symptoms });
     } catch (error) {
-        
+        return res.json({ error: error }).status(500);
     }
 };

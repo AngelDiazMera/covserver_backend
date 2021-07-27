@@ -15,7 +15,7 @@ router.route('/')
     .get(auth, getUsers);
 
 router.route('/mine')
-    .get(auth, getMyUser)
+    .get(auth, getMyUser);
 
 router.route('/symptoms')
     .get(auth, getSymptoms);
