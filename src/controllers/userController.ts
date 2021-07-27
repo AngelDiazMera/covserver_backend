@@ -1,6 +1,8 @@
 //import packages
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
+const {ObjectId} = mongoose.Types;
 //Import files
 import UserModel,{User} from '../models/User';
 import config from '../config/config';
@@ -100,5 +102,31 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
         });
     } catch (error) {
         return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
+    }
+};
+
+// Get the symptoms registered by the user
+export const getSymptoms = async (req: Request, res: Response): Promise<Response | any> => {
+    if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
+    const userReq = req.user as User; // user from passport
+    try {
+        // TODO: Check json response structure according to the frontend requirments
+        const symptoms: any[] = await UserModel.aggregate([
+            { $match: {"_id": ObjectId(userReq.id)} },
+            {
+                $lookup:
+                {
+                    from: "symptoms",
+                    localField: "_id",
+                    foreignField: "userRef",
+                    as: "symptomsRef"
+                }
+           }
+         ]
+        );
+        if (symptoms.length === 0) return res.status(400).json({msg: 'El usuario no tiene síntomas'})
+        return res.json({ symptoms });
+    } catch (error) {
+        
     }
 };
