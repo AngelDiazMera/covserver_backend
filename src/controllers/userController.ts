@@ -111,7 +111,7 @@ export const getSymptoms = async (req: Request, res: Response): Promise<Response
     if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
     const userReq = req.user as User; // user from passport
     try {
-        // TODO: Check json response structure according to the frontend requirments
+        // TODO: Check json response structure according to the frontend requirements
         const symptoms: any[] = await UserModel.aggregate([
             { $match: {"_id": ObjectId(userReq.id)} },
             {
@@ -120,13 +120,22 @@ export const getSymptoms = async (req: Request, res: Response): Promise<Response
                     from: "symptoms",
                     localField: "_id",
                     foreignField: "userRef",
-                    as: "symptomsRef"
+                    as: "fromSymptoms"
                 }
-           }
+           }, 
+           { $project: { 
+                    "_id": 0, 
+                    "fromSymptoms.symptoms": 1, 
+                    "fromSymptoms.symptomsDate": 1, 
+                    "fromSymptoms.remarks": 1 ,
+                    "fromSymptoms.isCovid": 1,
+                    "fromSymptoms.covidDate": 1
+                } 
+            }
          ]
         );
         if (symptoms.length === 0) return res.status(400).json({msg: 'El usuario no tiene síntomas'})
-        return res.json({ symptoms });
+        return res.json({ fromSymptoms: symptoms[0].fromSymptoms });
     } catch (error) {
         return res.json({ error: error }).status(500);
     }
