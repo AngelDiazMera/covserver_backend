@@ -35,6 +35,14 @@ const userSchema: Schema<User> = new Schema({
         },
         required: true
     },
+    healthCondition: {
+        type: String,
+        enum: {
+            values: ['healthy', 'risk', 'infected'],
+            message: '{VALUE} no es soportado',
+            default: 'healthy'
+        }
+    }, 
     access:{
         email:{
             type: String,

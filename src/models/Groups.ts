@@ -7,6 +7,7 @@ export interface Groups extends mongoose.Document {
   members?: [
     {
       userRef: String;
+      mobileToken: String;
     }
   ];
   enterpriseRef: String;
@@ -14,6 +15,7 @@ export interface Groups extends mongoose.Document {
     {
       userRef: String;
       visitDate: Date;
+      mobileToken: String;
     }
   ];
 }
@@ -26,6 +28,7 @@ const groupsSchema: Schema = new Schema({
   members: [
     {
       userRef: { type: Schema.Types.ObjectId, required: true },
+      mobileToken: { type: String, required: true },
     },
   ],
   enterpriseRef: {
@@ -37,6 +40,7 @@ const groupsSchema: Schema = new Schema({
     {
       userRef: { type: Schema.Types.ObjectId, required: true },
       visitDate: { type: Date, required: true },
+      mobileToken: { type: String, required: true },
     },
   ],
 });

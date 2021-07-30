@@ -13,7 +13,7 @@ mongoose.connect(config.DB.URI, dbOptions)
 const connection = mongoose.connection;
 // When conection is open
 connection.once('open', () => {
-    console.log('\x1b[32m%s\x1b[0m','Database is connected');
+    console.log('\x1b[36m%s\x1b[0m','Database is connected');
 });
 // When connection crashed, exit the process
 connection.on('error', error => {

@@ -1,9 +1,12 @@
 //import packages
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose';
 //Import files
-import UserModel,{User} from '../models/User';
+import UserModel,{ User } from '../models/User';
 import config from '../config/config';
+import GroupsModel, { Groups } from '../models/Groups';
+import { addMinutes } from '../lib/dateModifiers';
 
 // Get all the users registered in the collection
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
@@ -101,4 +104,57 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
     } catch (error) {
         return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
     }
+};
+
+export const setInfected = async (req: Request, res: Response): Promise<Response> => {
+    if (req.body.anonym == null && !req.body.symptomsDate) return res.status(400).json({msg: 'Falta anonym y symptomsDate'});
+    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+
+    const userReq = req.user as User; // user from passport
+    return res.json({});
+
+    /*try {
+        // QUERY 1
+        const datesAggregation = [
+            { $match: 
+                { 'visits.userRef': mongoose.Types.ObjectId(userReq.id) }
+            }, 
+            { $project: 
+                { _id: 0, 'visits.visitDate': 1 }
+            },
+            { $group: 
+                { _id: '$visits.visitDate' } 
+            }];
+        var dates = await GroupsModel.aggregate(datesAggregation);
+        dates = dates[0]._id;
+
+        // QUERY 3
+        const orQuery = []
+        for (const date of dates){
+            orQuery.push({
+                '$and': [
+                    {  '$gte': ['$$index.visitDate', addMinutes(new Date(date), -60)] },// Consider one hour before
+                    { '$lte': ['$$index.visitDate', addMinutes(new Date(date), 60)] } // Consider a visit of one hour
+                ]
+            })
+        }
+        
+        const tokensAggregation = [
+            { $project: 
+                { _id: 0, visits: {
+                    $filter: {
+                        input: '$visits',
+                        as: 'index',
+                        cond: { $or: orQuery }
+                }}}},
+            { $project: {'visits.userRef': 1}},
+            { $group: {'_id': '$visits.userRef'}} // must be changed to mobile Token
+        ]
+        var tokens = await GroupsModel.aggregate(tokensAggregation);
+        tokens = tokens[0]._id;
+
+        return res.json({tokens});
+    } catch (error) {
+        return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
+    }*/
 };
