@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose"
+import mongoose, { Schema, model, Date } from "mongoose"
 import bcrypt from 'bcrypt'
 
 enum Gender {
@@ -6,10 +6,19 @@ enum Gender {
     female = 'female',
     other = 'other'
 };
+enum HealthCondition {
+    lowRisk = 'Riesgo bajo',
+    mediumRisk = 'Riesgo medio',
+    infected = 'Contagiado'  
+};
+
 export interface User extends mongoose.Document{
     name: String;
     lastName: String;
-    gender: Gender;
+    gender: Gender; 
+    healthCondition: HealthCondition;
+    symptomsDate: Date; 
+    infectedDate: Date;
     access: {
         email: String;
         password: String;
@@ -34,7 +43,21 @@ const userSchema: Schema<User> = new Schema({
             message: '{VALUE} no es soportado'
         },
         required: true
+    },  
+    healthCondition:{
+        type: String,
+        enum: {
+            values: ['Riesgo bajo', 'Riesgo medio', 'Contagiado'],
+            message: '{VALUE} no es soportado'
+        },
+        required: true
     },
+    symptomsDate:{
+        type:Date
+    }, 
+    infectedDate:{
+        type:Date
+    }, 
     access:{
         email:{
             type: String,
