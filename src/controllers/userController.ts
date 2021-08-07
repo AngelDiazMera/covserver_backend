@@ -111,86 +111,26 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
     }
 };
   
-//This get the codes only of visits
-export const getVisits = async (req: Request, res: Response): Promise<Response|any > => {
-    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
-
-    const entReq = req.user as Enterprise; // user from passport
-
-    try {
-        const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
-        if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'});
-        console.log("id:"+enterprise.id)
-        const visits: any[] = await GroupsModel.aggregate([
-            { 
-                $match: {
-                    "enterpriseRef": ObjectId(enterprise.id)
-                } 
-            }, 
-            {
-              "$unwind": "$visits"
-            },
-            {
-              "$lookup": {
-                "from": "users",
-                "localField": "visits.userRef",
-                "foreignField": "_id",
-                "as": "visitsJoined"
-              }
-            },
-            {
-              "$unwind": "$visitsJoined"
-            },
-            {
-              "$addFields": {
-                "visits": {
-                  "$mergeObjects": [
-                    "$visits",
-                    "$visitsJoined"
-                  ]
-                }
-              }
-            },
-            {
-              "$group": {
-                "_id": null,
-                "visits": {
-                  "$push": "$visits"
-                }
-              }
-            },
-            {
-              "$project": {
-                "_id": 0,
-                "visits.visitDate": 1,
-                "visits.name": 1,
-                "visits.lastName": 1,
-                "visits.symptomsDate": 1,
-                "visits.infectedDate": 1,
-                "visits.gender": 1,
-                "visits.healthCondition": 1
-              }
-            }
-          ]
-        );
-        if (visits.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400);
-        res.json({ visits });     
-    } catch (error) {
-        res.json({ error: error , msg: `Error lenght`}).status(500);
-    }
-};
-
-
 //This get the codes only of members
 export const getMembers = async (req: Request, res: Response): Promise<Response|any > => {
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
 
-    const entReq = req.user as Enterprise; // user from passport
+    const entReq = req.user as Enterprise; // user from passport 
+    
+    //Limit and nuber of elements that are ommited for skipt data, this is a request of the url 
+    const vSkip:any = req.query.skip; 
+    let skip: any = { };
+
+    //This is a validation, when the user set 0, the query is not set in the aggregate query
+    if(vSkip !== 0){
+      skip =  { 
+        $skip: parseInt(vSkip)
+      };  
+    } 
 
     try {
         const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
-        if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'});
-        console.log("id:"+enterprise.id)
+        if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'}); 
         const members: any[] = await GroupsModel.aggregate([
             { 
                 $match: {
@@ -220,6 +160,10 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
                   ]
                 }
               }
+            }, 
+            skip
+            ,{
+              $limit: 10
             },
             {
               "$group": {
@@ -248,4 +192,88 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
     } catch (error) {
         res.json({ error: error , msg: `Error lenght`}).status(500);
     }
+};
+
+//This get the codes only of visits 
+export const getVisits = async (req: Request, res: Response): Promise<Response|any > => {
+  if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+
+  const entReq = req.user as Enterprise; // user from passport
+  
+  //Limit and nuber of elements that are ommited for skipt data, this is a request of the url 
+  const vSkip:any = req.query.skip;  
+  let skip: any = { };
+
+  //This is a validation, when the user set 0, the query is not set in the aggregate query
+  if(vSkip !== 0){
+    skip =  { 
+      $skip: parseInt(vSkip)
+    };  
+  } 
+
+  try { 
+    const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
+        if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'}); 
+        const visits: any = await GroupsModel.aggregate([
+          { 
+              $match: {
+                  "enterpriseRef": ObjectId(enterprise.id)
+              } 
+          }, 
+          {
+            "$unwind": "$visits"
+          },
+          {
+            "$lookup": {
+              "from": "users",
+              "localField": "visits.userRef",
+              "foreignField": "_id",
+              "as": "visitsJoined"
+            }
+          },
+          {
+            "$unwind": "$visitsJoined"
+          },
+          {
+            "$addFields": {
+              "visits": {
+                "$mergeObjects": [
+                  "$visits",
+                  "$visitsJoined"
+                ]
+              }
+            }
+          }, 
+          skip
+          ,{
+            $limit: 10
+          },
+          {
+            "$group": {
+              "_id": null,
+              "visits": {
+                "$push": "$visits"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 0,
+              "visits.visitDate": 1,
+              "visits.name": 1,
+              "visits.lastName": 1,
+              "visits.symptomsDate": 1,
+              "visits.infectedDate": 1,
+              "visits.gender": 1,
+              "visits.healthCondition": 1
+            }
+          }
+        ]
+        );
+        if (visits.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400); 
+        res.json({ visits });
+  } catch (error) {
+    console.error(error);
+      res.json({ error: error , msg: `Error de API`}).status(500);
+  }
 };
