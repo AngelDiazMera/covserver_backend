@@ -119,6 +119,8 @@ export default class GroupSubjects {
      * @returns The map of groups of the user as a promise.
      */
     public static async searchWhereId(id: string):Promise<Map<string, Subject>> {
+        console.log(id)
+        console.log(addDays(new Date(), -14))
         try {
             const groups: Groups[] = await GroupsModel.aggregate([
                 { $unwind: {
@@ -139,6 +141,7 @@ export default class GroupSubjects {
                         $gte: addDays(new Date(), -14)
                       }}
                     ]},
+                    { 'visits_index':0 },
                     { 'visits_index':null }
                 ]}},
                 { $group: {
@@ -160,7 +163,8 @@ export default class GroupSubjects {
                 }},
                 { $match: {$or: [
                     { 'members.userRef': ObjectId(id) },
-                    { 'members_index':null }
+                    { 'members_index':null },
+                    { 'members_index':0 }
                 ]}},
                 { $group: {
                     _id: '$_id',
