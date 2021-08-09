@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose';
 //Import files
-import UserModel,{ User } from '../models/User';
+import UserModel,{ HealthCondition, User } from '../models/User';
 import config from '../config/config';
 import GroupsModel, { Groups } from '../models/Groups';
 import { addMinutes } from '../lib/dateModifiers';
@@ -43,7 +43,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     if (user)
         return res.status(400).json({msg: 'El usuario con ese email ya ha sido registrado'});
     // Save the new user to database
-    const { name, lastName, gender, access, mobileToken } = req.body;
+    const { name, lastName, gender, access, mobileToken} = req.body;
     try {
         const mobileTokens: string[] = [mobileToken];
         const newUser: User = new UserModel({ name, lastName, gender, access, mobileTokens});
@@ -54,6 +54,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
             token: _createToken(newUser), 
         });
     } catch (error) {
+        console.log(error)
         return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
 };
@@ -105,56 +106,35 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
         return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
     }
 };
-
-export const setInfected = async (req: Request, res: Response): Promise<Response> => {
-    if (req.body.anonym == null && !req.body.symptomsDate) return res.status(400).json({msg: 'Falta anonym y symptomsDate'});
-    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
-
+/**
+ * Updates the health condition of the user.
+ * @param req must have a healthCondition string
+ * @returns a json Response object
+ */
+export const updateHealthCondition = async (req: Request, res: Response): Promise<Response> => {
+    // Validations if data is missing
+    if (!req.body.healthCondition) return res.status(400).json({msg: 'Falta healthCondition'});
+    if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
+    if (!Object.values(HealthCondition).includes(req.body.healthCondition)) 
+        return res.status(400).json({msg: 'El valor proporcionado para healthCondition debe ser uno de los siguientes: healthy, risk o infected'});
+    // User from passport (auth methods)
     const userReq = req.user as User; // user from passport
-    return res.json({});
+    const healthCondition = req.body.healthCondition as HealthCondition;
 
-    /*try {
-        // QUERY 1
-        const datesAggregation = [
-            { $match: 
-                { 'visits.userRef': mongoose.Types.ObjectId(userReq.id) }
-            }, 
-            { $project: 
-                { _id: 0, 'visits.visitDate': 1 }
-            },
-            { $group: 
-                { _id: '$visits.visitDate' } 
-            }];
-        var dates = await GroupsModel.aggregate(datesAggregation);
-        dates = dates[0]._id;
-
-        // QUERY 3
-        const orQuery = []
-        for (const date of dates){
-            orQuery.push({
-                '$and': [
-                    {  '$gte': ['$$index.visitDate', addMinutes(new Date(date), -60)] },// Consider one hour before
-                    { '$lte': ['$$index.visitDate', addMinutes(new Date(date), 60)] } // Consider a visit of one hour
-                ]
-            })
-        }
-        
-        const tokensAggregation = [
-            { $project: 
-                { _id: 0, visits: {
-                    $filter: {
-                        input: '$visits',
-                        as: 'index',
-                        cond: { $or: orQuery }
-                }}}},
-            { $project: {'visits.userRef': 1}},
-            { $group: {'_id': '$visits.userRef'}} // must be changed to mobile Token
-        ]
-        var tokens = await GroupsModel.aggregate(tokensAggregation);
-        tokens = tokens[0]._id;
-
-        return res.json({tokens});
+    try {
+        var isUpdated: boolean = true; // Handle if document is updated
+        // Update query
+        UserModel.findOneAndUpdate(
+            { _id: mongoose.Types.ObjectId(userReq.id) }, 
+            { $set: { healthCondition: healthCondition }},
+            { new: true, upsert: true },
+            function (err, doc) { if (err) isUpdated = false; });
+        // If updated, return status 200 and message
+        if (isUpdated)
+            return res.json({msg: 'El estado se actualizó correctamente'});
+        // else, returns status 400 and message
+        return res.status(400).json({ msg: 'Hubo un problema con la actualización' });
     } catch (error) {
-        return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
-    }*/
+        return res.status(400).json({ error, ...{ msg: 'Hubo un problema con el registro'} });
+    }
 };

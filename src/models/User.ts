@@ -6,6 +6,11 @@ enum Gender {
     female = 'female',
     other = 'other'
 };
+export enum HealthCondition {
+    healthy = 'healthy',
+    risk = 'risk',
+    infected = 'infected'
+};
 export interface User extends mongoose.Document{
     name: String;
     lastName: String;
@@ -14,6 +19,8 @@ export interface User extends mongoose.Document{
         email: String;
         password: String;
     };
+    healthCondition?: HealthCondition;
+    mobileTokens?: String[];
     comparePassword: (password: String) => Promise<boolean>;
 };
 
@@ -57,7 +64,9 @@ const userSchema: Schema<User> = new Schema({
     mobileTokens: [{
         type: String,
         required: true,
-        unique: true
+        // unique: true,
+        // sparse: true,
+        default: ''
     }]
 });
 

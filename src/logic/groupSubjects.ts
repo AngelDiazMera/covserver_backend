@@ -30,6 +30,7 @@ export default class GroupSubjects {
         try {
             const groups = await GroupsModel.find({}, 
                 {
+                    'name'               : 1,
                     'members.userRef'    : 1, 
                     'members.mobileToken': 1, 
                     'visits.userRef'     : 1, 
@@ -49,7 +50,7 @@ export default class GroupSubjects {
     private static _queryToMap(groups:Groups[]): Map<string, Subject> {
         const newGroups:Map<string, Subject> = new Map();
         for (const group of groups){
-            const groupSbj = new GroupSubject();
+            const groupSbj = new GroupSubject(group._id.toString());
             // Assign the tokens to the member's list
             if (group.members != null && group.members.length > 0)
                 for (const member of group.members) 
@@ -64,7 +65,7 @@ export default class GroupSubjects {
                         visit.mobileToken.toString(), 
                         visit.visitDate));
 
-            if (groupSbj != new GroupSubject()) newGroups.set(group._id.toString(), groupSbj);
+            if (groupSbj != new GroupSubject(group._id.toString())) newGroups.set(group._id.toString(), groupSbj);
         }
         return newGroups;
     }
@@ -126,6 +127,7 @@ export default class GroupSubjects {
                     preserveNullAndEmptyArrays: true
                 }},
                 { $project: {
+                    name: 1,
                     members:1,
                     visits:1,
                     visits_index:1
@@ -142,7 +144,8 @@ export default class GroupSubjects {
                 { $group: {
                     _id: '$_id',
                     visits: { $push: '$visits' },
-                    members: { $first: '$members' }
+                    members: { $first: '$members' },
+                    name: { $first: '$name' }
                 }},
                 { $unwind: {
                     path: '$members',
@@ -150,6 +153,7 @@ export default class GroupSubjects {
                     preserveNullAndEmptyArrays: true
                 }},
                 { $project: {
+                    name: 1,
                     members:1,
                     visits:1,
                     members_index:1
@@ -161,9 +165,11 @@ export default class GroupSubjects {
                 { $group: {
                     _id: '$_id',
                     members: { $push: '$members' },
-                    visits: {$first: '$visits'}
+                    visits: {$first: '$visits'},
+                    name: { $first: '$name' }
                 }},
                 { $project: {
+                    name: 1,
                     members: 1,
                     visits: 1,
                     has_members: { $gt: [ {$size: "$members" }, 0 ] },
@@ -173,9 +179,9 @@ export default class GroupSubjects {
                     { has_members: true },
                     { has_visits: true }
                 ]}},
-                { $project: { members: 1, visits: 1}}
+                { $project: { members: 1, visits: 1, name: 1}}
             ]);
-
+            console.log(groups)
             return this._queryToMap(groups);
         } catch (error) {
             console.log(error)
@@ -198,7 +204,7 @@ export default class GroupSubjects {
             const globalSbj = global.get(idGroup) as GroupSubject;
             const reversedVisits = globalSbj.visits.reverse();
 
-            const newSubject = new GroupSubject()
+            const newSubject = new GroupSubject(globalSbj.id.toString())
             // Adding visits
             visitorSbj.visits.forEach((visitor) => {
                 // For each global visitor
@@ -215,8 +221,10 @@ export default class GroupSubjects {
                             isDateBetween = addMinutes(visitorGlb.visitDate, 120) > visitor.visitDate;
                         else isDateBetween = addMinutes(visitor.visitDate, 120) > visitorGlb.visitDate;
                         
-                        if (isValidDate && isDateBetween) 
+                        if (isValidDate && isDateBetween) {
+                            visitorGlb.sharedDate = visitor.visitDate;
                             newSubject.attach(visitorGlb);
+                        }
                         // If the date is before 14 days since now, stops searching
                         return !isValidDate
                 });

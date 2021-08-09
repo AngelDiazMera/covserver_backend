@@ -5,10 +5,14 @@ import config from './config/config'
 const dbOptions: ConnectionOptions = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useCreateIndex: true
+    useCreateIndex: true,
+    useFindAndModify: false
 };
 // Connect mongoose to mongodb URI
 mongoose.connect(config.DB.URI, dbOptions)
+
+// If wants to debug queries and log them into console
+// mongoose.set('debug', true);
 
 const connection = mongoose.connection;
 // When conection is open

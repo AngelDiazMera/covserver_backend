@@ -1,5 +1,5 @@
 import { Subject, Observer } from './observer';
-import { addDays, formatDateToTopic } from '../lib/dateModifiers';
+import { addDays, concatDates, formatDateToSpanish, formatDateToTopic } from '../lib/dateModifiers';
 import { PushNotification, sendPushToTopic } from '../middlewares/fcmNotifications';
 
 export interface IGroupObserver{
@@ -21,9 +21,19 @@ export interface IGroupSubject {
 export class GroupSubject implements Subject{
     private _lastInfected!: VisitorObserver;
 
+    private _id: string;
     private _members: MemberObserver[] = [];
     private _visits: VisitorObserver[] = [];
+
+    constructor (id:string, members: MemberObserver[] = [], visits: VisitorObserver[] = []) {
+        this._id = id;
+        this._members = members;
+        this._visits = visits;
+    }
     
+    public get id(): string {
+        return this._id;
+    }
     public get members(): MemberObserver[] {
         return this._members;
     }
@@ -64,21 +74,40 @@ export class GroupSubject implements Subject{
      * visitors and members.
     */
     public async notify(message: PushNotification): Promise<void> {
-        const onlyUnique = (token: string, index: number, self: string[]) => {
-            return self.indexOf(token) === index;
-        };
-        const memberTokens = this._makeTokenArray(this._members).filter(onlyUnique);
-        const visitorsTokens = this._makeTokenArray(this._visits).filter(onlyUnique);
+        const memberTokens = this._makeTokenArray(this._members);
+        const visitorsTokens = this._makeTokenArray(this._visits);
+
+        console.log(visitorsTokens)
+
+        message.data.groupRef = this._id;
+
+        const visitorsMessage: PushNotification = {
+            data: { ...message.data, ...{ type: 'visit_infection' }},
+            notification: {
+                title: '🚌 Alerta de infección 🦠',
+                body: 'Pudiste haber tenido contacto con un infectado por Covid-19.'
+            }
+        }
+
+        const membersMessage: PushNotification = {
+            data: { ...message.data, ...{ type: 'member_infection' }},
+            notification: {
+                title: '💼 Alerta de infección 🦠',
+                body: 'Alguno de tus grupos reportó un infectado con Covid-19.'
+            }
+        }
+
         // FCM notification
         const topicName = `${this._lastInfected.id}_${formatDateToTopic(this._lastInfected.visitDate)}`;
         
-        message.notification.body = 'Alguno de tus grupos reportó un infectado con Covid-19.';
-        if (memberTokens.length > 0)
-            await sendPushToTopic(`members_${topicName}`, memberTokens, message);
-
-        message.notification.body = 'Pudiste haber tenido contacto con un infectado por Covid-19.';
-        if (visitorsTokens.length > 0)
-            await sendPushToTopic(`visits_${topicName}`, visitorsTokens, message);
+        if (memberTokens.length > 0){
+            // console.log('MEMBERS', memberTokens)
+            await sendPushToTopic(`members_${topicName}`, memberTokens, membersMessage);
+        }
+        if (visitorsTokens.length > 0){
+            // console.log('VISITS', visitorsTokens)
+            await sendPushToTopic(`visits_${topicName}`, visitorsTokens, visitorsMessage);
+        }
     }
     /**
      * @returns a list of tokens
@@ -89,10 +118,32 @@ export class GroupSubject implements Subject{
         for (const observer of observers) 
             observerTokens.push(observer.mobileToken);
         // Splice the token of the current infected
-        const observerIndex = observerTokens.indexOf(this._lastInfected.mobileToken);
-        if (observerIndex === -1) observerTokens.splice(observerIndex, 1);
+        // const observerIndex = observerTokens.indexOf(this._lastInfected.mobileToken);
+        // if (observerIndex === -1) observerTokens.splice(observerIndex, 1);
 
         return observerTokens;
+    }
+    /**
+     * @returns a list of tokens
+    */
+    public static makeTokenArrayByDate(observers: VisitorObserver[]): Map<string, Date[]> {
+        if (observers.length == 0) return new Map();
+
+        const onlyUnique = (date: Date, index: number, self: Date[]) => {
+            return self.indexOf(date) === index;
+        };
+
+        var groupBy = function(xs: VisitorObserver[], key: string) {
+            return xs.reduce(function(acc:Map<string, Date[]>, curr: VisitorObserver, idx:number, src: VisitorObserver[]) {
+                if (!acc.get(curr.mobileToken))
+                    acc.set(curr.mobileToken, []);
+                acc.get(curr.mobileToken)?.push(curr.sharedDate!);
+                acc.set(curr.mobileToken, acc.get(curr.mobileToken)!.filter(onlyUnique));
+                return acc;
+            }, new Map());
+        }; 
+        
+        return groupBy(observers, 'mobileToken');
     }
     /**
      * Register the infected user and notifies.
@@ -102,9 +153,9 @@ export class GroupSubject implements Subject{
         await this.notify(message);
     }
 
-    public toJson(id: string = ''): IGroupSubject {
+    public toJson(): IGroupSubject {
         return {
-            id: id,
+            id: this._id,
             members: this._members.map(member => member.toJson()),
             visits: this._visits.map(visit => visit.toJson()),
         };
@@ -135,6 +186,7 @@ export class VisitorObserver implements Observer{
     public id: string;
     public mobileToken: string;
     public visitDate: Date;
+    public sharedDate: Date | undefined = undefined;
 
     constructor( id: string, mobileToken: string, visitDate: Date ) {
         this.id = id;

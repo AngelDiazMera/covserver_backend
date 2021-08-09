@@ -4,8 +4,8 @@ const qrcode: any =  require('qrcode');
 // Imported files
 import EnterpriseModel, { Enterprise } from '../models/Enterprise';
 import GroupsModel, { Groups } from '../models/Groups';
-import { User } from '../models/User';
-import { addDays, addMinutes } from '../lib/dateModifiers';
+import UserModel, { User } from '../models/User';
+import { addMinutes, concatDates, formatDateToSpanish } from '../lib/dateModifiers';
 // Due to the observer pattern
 import { GroupSubject, IGroupSubject, MemberObserver, VisitorObserver } from '../logic/notifiers';
 import GroupSubjects from '../logic/groupSubjects';
@@ -42,12 +42,13 @@ export const saveGroup = async (req: Request, res: Response): Promise<void> => {
             res.json({msg: 'Enterprise ref is not correct'});
             return;
         }
+        const concatName:string = `${entReq.name} - ${name}`;
         const memberCode: String = _generateSubgroupCode(enterprise.acronym, true);
         const visitorCode: String = _generateSubgroupCode(enterprise.acronym, false);
-        const groups: Groups = new GroupsModel({ name, memberCode, visitorCode, enterpriseRef });
+        const groups: Groups = new GroupsModel({ name, concatName, memberCode, visitorCode, enterpriseRef });
         await groups.save();
         // Save subject due to notification purposes
-        GroupSubjects.addToSet(groups.id, new GroupSubject());
+        GroupSubjects.addToSet(groups.id, new GroupSubject(name));
         res.json({groups, msg: 'Group saved on database'});
     } catch (error) {
         res.json({ error: error }).status(500);
@@ -135,8 +136,12 @@ export const assignToGroup = async (req: Request, res: Response): Promise<Respon
     }
 }
 
+/**
+ * Sets a user as infected and notify to visitors and members who may have had been with that user
+*/
 export const setInfected = async (req: Request, res: Response): Promise<Response> => {
-    if (req.body.anonym == null && !req.body.symptomsDate) return res.status(400).json({msg: 'Por favor envíe anonym y symptomsDate'});
+    if (req.body.anonym == null || !req.body.symptomsDate || !req.body.mobileToken) 
+        return res.status(400).json({msg: 'Por favor envíe anonym, mobileToken y symptomsDate'});
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
 
     const userReq = req.user as User; // user from passport
@@ -145,10 +150,9 @@ export const setInfected = async (req: Request, res: Response): Promise<Response
     try {
         const message: PushNotification = {
             data: {
-                userId: userReq.id,
-                type: 'infection',
+                userRef: userReq.id,
                 anonym: `${req.body.anonym}`,
-                symptomsDate: `${new Date(req.body.symptomsDate)}`
+                symptomsDate: `${formatDateToSpanish(new Date(req.body.symptomsDate))}`
             },
             notification: {
                 title: 'Alerta de infección',
@@ -158,19 +162,49 @@ export const setInfected = async (req: Request, res: Response): Promise<Response
         const allSubjects = GroupSubjects.getInstance();
         const visitorSubjects = await GroupSubjects.searchWhereId(userReq.id);
         var matchedSubjects = GroupSubjects.joinInfectedAndGlobal(visitorSubjects, allSubjects);
-        for (const [id, group] of matchedSubjects as Map<string,GroupSubject>) 
-            await group.registerInfected(
-                new VisitorObserver(userReq.id, token, new Date()), message);
         
+        for (const [id, group] of matchedSubjects as Map<string,GroupSubject>) {
+            group.registerInfected(
+                new VisitorObserver(userReq.id, token, new Date()), message);
+        }
+        // TODO: Implement update for health state of the user to 'infected'
         return res.json({msg: 'El mensaje se envió satisfactoriamente'});
     } catch (error) {
         console.log(error)
-        return res.json({error: error, msg: 'Hubo un problema con la asignación'});
+        return res.json({error: error, msg: 'Hubo un problema con el envío'});
     }
 }
 
-// THIS METOD NEEDS TO BE ERASED!!!!!!!!!!!!!!!!!!!!!!!!!!!
-export const getObserver = async (req: Request, res: Response): Promise<Response> => {
-    console.log(GroupSubjects.getInstance())
-    return res.json({});
+export const getAlertData = async (req: Request, res: Response): Promise<Response> => {
+    if (req.body.anonym == null || !req.body.userRef || !req.body.groupRef || !req.body.mobileToken) 
+        return res.status(400).json({msg: 'Por favor envíe anonym, mobileToken, userRef y groupRef'});
+    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+
+    const userReq = req.user as User; // user from passport
+
+    try {
+        const user = await UserModel.findById(req.body.userRef);
+        const group = await GroupsModel.findById(req.body.groupRef);
+
+        const allSubjects = GroupSubjects.getInstance(),
+        subjects = await GroupSubjects.searchWhereId(userReq.id),
+        matchedSubjects = GroupSubjects.joinInfectedAndGlobal(subjects, allSubjects),
+        visitorSubjects = matchedSubjects as Map<string, GroupSubject>;
+
+        const datesMap = GroupSubject.makeTokenArrayByDate(visitorSubjects.get(req.body.groupRef)?.visits!);
+        
+        var joinDates:Date[] = [];
+        for (const [token, dates] of datesMap) 
+            joinDates = [...joinDates, ...dates];
+        
+
+        return res.json({
+            ...(!req.body.anonym && {completeName: `${user?.name} ${user?.lastName}`}),
+            groupName: group?.name,
+            dates: concatDates(joinDates)
+        });
+    } catch (error) {
+        console.log(error)
+        return res.json({error: error, msg: 'Hubo un problema con el envío'});
+    }
 }

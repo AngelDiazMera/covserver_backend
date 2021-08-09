@@ -2,6 +2,7 @@ import mongoose, { Schema, model } from "mongoose";
 
 export interface Groups extends mongoose.Document {
   name: String;
+  concatName?: String;
   memberCode: String;
   visitorCode: String;
   members?: [
@@ -23,6 +24,7 @@ export interface Groups extends mongoose.Document {
 // Schema definition for database
 const groupsSchema: Schema = new Schema({
   name: { type: String },
+  concatName: { type: String },
   memberCode: { type: String },
   visitorCode: { type: String },
   members: [
