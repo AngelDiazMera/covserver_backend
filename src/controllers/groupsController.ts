@@ -5,6 +5,7 @@ const qrcode: any =  require('qrcode');
 import EnterpriseModel, { Enterprise } from '../models/Enterprise';
 import GroupsModel, { Groups } from '../models/Groups'; 
 import UserModel,{User} from '../models/User';
+import { addMinutes, concatDates, formatDateToSpanish } from '../lib/dateModifiers';
 //Dependencies of mongoose
 import mongoose, { Number } from 'mongoose'
 const {ObjectId} = mongoose.Types;
@@ -74,7 +75,7 @@ export const getQR = async (req: Request, res: Response): Promise<void> => {
 
 /**
  * Request to assign an user to a group as a `member` or a `visitor`.
- * */ 
+ * */
  export const assignToGroup = async (req: Request, res: Response): Promise<Response> => {
     // Missing data
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
@@ -103,29 +104,20 @@ export const getQR = async (req: Request, res: Response): Promise<void> => {
                 return res.status(400).json({ msg: 'Este usuario ya fue registrado en el grupo' });
             // Push member to array
             group.members?.push({ userRef: userReq.id, mobileToken: token });
-            // Save subject due to notification purposes
-            //const groupSbj:Subject | undefined = GroupSubjects.getSubject(group.id);
-            //groupSbj?.attach(new MemberObserver(userReq.id, token)); // TODO: Change to token
         }
         else {
             const today = new Date();
             // Check if visit has already been registered in some minutes
-            /*const pos = group.visits?.findIndex( visit => 
+            const pos = group.visits?.findIndex( visit => 
                 visit.userRef == userReq.id &&
                 visit.visitDate > addMinutes(today, -waiting));
             if (pos != -1 && addMinutes(group.visits![pos!].visitDate, waiting) > today){ 
                 console.log(addMinutes(group.visits![pos!].visitDate, waiting), ' > ', today)
                 return res.status(400).json({ msg: `Debe esperar al menos ${waiting} minutos para registrarse nuevamente` });
-            }*/
+            }
             // Push visit to array
             group.visits?.push({ userRef: userReq.id, visitDate: today, mobileToken: token });
-            // Save subject due to notification purposes
-             /*
-            const groupSbj:Subject | undefined = GroupSubjects.getSubject(group.id);
-            groupSbj?.attach(new VisitorObserver(userReq.id, token, today)); // TODO: Change to token
-            */
         }
-         
         // Save group to database
         group.save();
         return res.json({ group, msg: 'Usuario asignado' });
