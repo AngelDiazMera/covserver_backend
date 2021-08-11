@@ -23,3 +23,15 @@ export const saveSymptoms = async (req: Request, res: Response): Promise<void> =
         res.json({ error: error }).status(500);
     }
 }
+
+// Delete symptoms from the collection
+export const deleteSymptoms = async (req: Request, res: Response): Promise<void> => {
+    const userReq = req.user as User;
+    const userRef = userReq.id;
+    try {
+        const symptoms: Symptoms | null = await SymptomsModel.findOneAndRemove(userRef);
+        res.json({ symptoms, msg: 'Symptoms deleted from database' });
+    } catch (error) {
+        res.json({ error: error }).status(500);
+    }
+}
