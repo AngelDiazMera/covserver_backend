@@ -6,10 +6,11 @@ enum Gender {
     female = 'female',
     other = 'other'
 };
+
 enum HealthCondition {
-    lowRisk = 'Riesgo bajo',
-    mediumRisk = 'Riesgo medio',
-    infected = 'Contagiado'  
+    healthy = 'healthy',
+    risk = 'risk',
+    infected = 'infected'
 };
 
 export interface User extends mongoose.Document{
