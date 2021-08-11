@@ -48,7 +48,7 @@ const userSchema: Schema<User> = new Schema({
     healthCondition:{
         type: String,
         enum: {
-            values: ['Riesgo bajo', 'Riesgo medio', 'Contagiado'],
+            values: ['healthy', 'risk', 'infected'],
             message: '{VALUE} no es soportado'
         },
         required: true
