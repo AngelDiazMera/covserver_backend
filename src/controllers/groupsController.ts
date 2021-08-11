@@ -137,6 +137,28 @@ export const getUsersByToken = async (req: Request, res: Response): Promise<void
     }
 };
 
-const  getCodesOfUser = (user: User) => {
-     //gg
-} 
+// Delete group assignation of a user
+export const deleteUserFromGroup = async (req: Request, res: Response): Promise<void> => {
+    const userReq = req.user as User;
+    const userRef = userReq.id;
+    const code: string = req.body.code;
+
+    try {
+        const isMember = code.startsWith('M');
+        if(isMember){
+            const group: Groups | null = await GroupsModel.findOneAndUpdate(
+                { memberCode: code },
+                { $pull: { members: { userRef: userRef } } }
+            );
+            res.json({ group, msg: 'Usuario eliminado del grupo' });
+        } else {
+            const group: Groups | null = await GroupsModel.findOneAndUpdate(
+                { visitorCode: code },
+                { $pull: { visits: { userRef: userRef } } }
+            );
+            res.json({ group, msg: 'Usuario eliminado del grupo' });
+        }
+    } catch (error) {
+        res.json({ error: error }).status(500);
+    }
+}
