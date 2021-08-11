@@ -119,73 +119,24 @@ export default class GroupSubjects {
      * @returns The map of groups of the user as a promise.
      */
     public static async searchWhereId(id: string):Promise<Map<string, Subject>> {
-        console.log(id)
-        console.log(addDays(new Date(), -14))
         try {
             const groups: Groups[] = await GroupsModel.aggregate([
-                { $unwind: {
-                    path: '$visits',
-                    includeArrayIndex: 'visits_index',
-                    preserveNullAndEmptyArrays: true
-                }},
-                { $project: {
-                    name: 1,
-                    members:1,
-                    visits:1,
-                    visits_index:1
-                }},
-                { $match: { $or: [
-                    { $and: [
-                      {'visits.userRef': ObjectId(id)},
-                      {'visits.visitDate': {
-                        $gte: addDays(new Date(), -14)
-                      }}
-                    ]},
-                    { 'visits_index':0 },
-                    { 'visits_index':null }
-                ]}},
-                { $group: {
-                    _id: '$_id',
-                    visits: { $push: '$visits' },
-                    members: { $first: '$members' },
-                    name: { $first: '$name' }
-                }},
-                { $unwind: {
-                    path: '$members',
-                    includeArrayIndex: 'members_index',
-                    preserveNullAndEmptyArrays: true
-                }},
-                { $project: {
-                    name: 1,
-                    members:1,
-                    visits:1,
-                    members_index:1
-                }},
-                { $match: {$or: [
-                    { 'members.userRef': ObjectId(id) },
-                    { 'members_index':null },
-                    { 'members_index':0 }
-                ]}},
-                { $group: {
-                    _id: '$_id',
-                    members: { $push: '$members' },
-                    visits: {$first: '$visits'},
-                    name: { $first: '$name' }
-                }},
-                { $project: {
-                    name: 1,
-                    members: 1,
-                    visits: 1,
-                    has_members: { $gt: [ {$size: "$members" }, 0 ] },
-                    has_visits: { $gt: [ {$size: "$visits" }, 0 ] }
-                }},
-                { $match: { $or: [
-                    { has_members: true },
-                    { has_visits: true }
-                ]}},
-                { $project: { members: 1, visits: 1, name: 1}}
+                { $project : {   // Projection: filter visits and members array
+                    name:1,
+                    visits: {
+                        $filter: {
+                            input: '$visits',
+                            as: "visit",
+                            cond: { $eq: [ "$$visit.userRef", ObjectId(id) ]}
+                        }},
+                    members: {
+                        $filter: {
+                            input: '$members',
+                            as: "member",
+                            cond: { $eq: [ "$$member.userRef", ObjectId(id) ]}
+                        }}
+                }}
             ]);
-            console.log(groups)
             return this._queryToMap(groups);
         } catch (error) {
             console.log(error)
@@ -206,7 +157,7 @@ export default class GroupSubjects {
             const visitorSbj = subject as GroupSubject;
             // Complete group
             const globalSbj = global.get(idGroup) as GroupSubject;
-            const reversedVisits = globalSbj.visits.reverse();
+            const reversedVisits = globalSbj.visits.reverse(); // Last dates (can be sorted)
 
             const newSubject = new GroupSubject(globalSbj.id.toString())
             // Adding visits

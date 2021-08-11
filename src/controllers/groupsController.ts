@@ -1,5 +1,6 @@
 // Imported packages
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 const qrcode: any =  require('qrcode');
 // Imported files
 import EnterpriseModel, { Enterprise } from '../models/Enterprise';
@@ -7,10 +8,12 @@ import GroupsModel, { Groups } from '../models/Groups';
 import UserModel, { User } from '../models/User';
 import { addMinutes, concatDates, formatDateToSpanish } from '../lib/dateModifiers';
 // Due to the observer pattern
-import { GroupSubject, IGroupSubject, MemberObserver, VisitorObserver } from '../logic/notifiers';
+import { GroupSubject, MemberObserver, VisitorObserver } from '../logic/notifiers';
 import GroupSubjects from '../logic/groupSubjects';
 import { Subject } from '../logic/observer';
 import { PushNotification } from '../middlewares/fcmNotifications';
+
+const { ObjectId } = mongoose.Types;
 
 // Get all the groups registered in the collection
 export const getGroups = async (req: Request, res: Response): Promise<void> => {
@@ -137,9 +140,9 @@ export const assignToGroup = async (req: Request, res: Response): Promise<Respon
 }
 
 /**
- * Sets a user as infected and notify to visitors and members who may have had been with that user
+ * Notify to visitors and members who may have had been with the infected user
 */
-export const setInfected = async (req: Request, res: Response): Promise<Response> => {
+export const notifyInfected = async (req: Request, res: Response): Promise<Response> => {
     if (req.body.anonym == null || !req.body.symptomsDate || !req.body.mobileToken) 
         return res.status(400).json({msg: 'Por favor envíe anonym, mobileToken y symptomsDate'});
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
@@ -148,25 +151,30 @@ export const setInfected = async (req: Request, res: Response): Promise<Response
     const token = req.body.mobileToken;
 
     try {
+        // Parses date from client
+        const parsedDate = Date.parse(req.body.symptomsDate);
+        const date = new Date(parsedDate);
+        // Message of FCM push notification
         const message: PushNotification = {
             data: {
                 userRef: userReq.id,
                 anonym: `${req.body.anonym}`,
-                symptomsDate: `${formatDateToSpanish(new Date(req.body.symptomsDate))}`
+                symptomsDate: `${formatDateToSpanish(date)}`
             },
             notification: {
                 title: 'Alerta de infección',
                 body: ''
             }
         };
+        // Filter subjects
         const allSubjects = GroupSubjects.getInstance();
         const visitorSubjects = await GroupSubjects.searchWhereId(userReq.id);
         var matchedSubjects = GroupSubjects.joinInfectedAndGlobal(visitorSubjects, allSubjects);
-        
-        for (const [id, group] of matchedSubjects as Map<string,GroupSubject>) {
+        // Notify related subjects
+        for (const [id, group] of matchedSubjects as Map<string,GroupSubject>) 
             group.registerInfected(
                 new VisitorObserver(userReq.id, token, new Date()), message);
-        }
+        
         // TODO: Implement update for health state of the user to 'infected'
         return res.json({msg: 'El mensaje se envió satisfactoriamente'});
     } catch (error) {
