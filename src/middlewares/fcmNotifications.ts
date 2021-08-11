@@ -41,7 +41,7 @@ export const sendPushToTopic = async (group: string, tokens: string[], notificat
     //     return self.indexOf(token) === index;
     // };
     // const filteredTokens = tokens.filter(onlyUnique);
-    const message = Object.assign({topic: group}, notification);
+    const message = {...{topic: group}, ...notification};
     await admin.messaging().subscribeToTopic(tokens, `/topics/${group}`);
     await _sendMessage(message);
 };

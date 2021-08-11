@@ -77,8 +77,6 @@ export class GroupSubject implements Subject{
         const memberTokens = this._makeTokenArray(this._members);
         const visitorsTokens = this._makeTokenArray(this._visits);
 
-        console.log(visitorsTokens)
-
         message.data.groupRef = this._id;
 
         const visitorsMessage: PushNotification = {
