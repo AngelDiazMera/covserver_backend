@@ -12,6 +12,7 @@ import Authentication from './middlewares/passport'
 import enterpriseRoutes from './routes/enterprise.routes'
 import groupsRoutes from './routes/groups.routes';
 import userRoutes from './routes/user.routes';
+import symptomsRoutes from './routes/symptoms.routes';
 
 
 // Initializations
@@ -41,6 +42,7 @@ passport.use(Authentication); // Passport uses the configuration from the middle
 app.use('/enterprise', enterpriseRoutes);
 app.use('/groups', groupsRoutes);
 app.use('/user', userRoutes);
+app.use('/symptoms', symptomsRoutes);
 
 // Static files: everything that a browser can use
 app.use(express.static(path.join(__dirname, 'public')));

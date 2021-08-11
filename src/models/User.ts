@@ -6,15 +6,18 @@ enum Gender {
     female = 'female',
     other = 'other'
 };
+
 export enum HealthCondition {
     healthy = 'healthy',
     risk = 'risk',
     infected = 'infected'
 };
+
 export interface User extends mongoose.Document{
     name: String;
     lastName: String;
     gender: Gender;
+    healthCondition: HealthCondition;
     access: {
         email: String;
         password: String;

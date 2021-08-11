@@ -1,7 +1,10 @@
 //import packages
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken'
-import mongoose from 'mongoose';
+
+import mongoose from 'mongoose'
+const {ObjectId} = mongoose.Types;
+
 //Import files
 import UserModel,{ HealthCondition, User } from '../models/User';
 import config from '../config/config';
@@ -100,12 +103,49 @@ export const getMyUser = async (req: Request, res: Response): Promise<Response> 
             email: user.access.email, 
             name: user.name, 
             lastName: user.lastName,
-            gender: user.gender
+            gender: user.gender,
+            healthCondition: user.healthCondition
         });
     } catch (error) {
         return res.json({ error: error, msg: 'Hubo un problema con el registro' }).status(400);
     }
 };
+
+// Get the symptoms registered by the user
+export const getSymptoms = async (req: Request, res: Response): Promise<Response | any> => {
+    if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
+    const userReq = req.user as User; // user from passport
+    try {
+        // TODO: Check json response structure according to the frontend requirements
+        const symptoms: any[] = await UserModel.aggregate([
+            { $match: {"_id": ObjectId(userReq.id)} },
+            {
+                $lookup:
+                {
+                    from: "symptoms",
+                    localField: "_id",
+                    foreignField: "userRef",
+                    as: "fromSymptoms"
+                }
+           }, 
+           { $project: { 
+                    "_id": 0, 
+                    "fromSymptoms.symptoms": 1, 
+                    "fromSymptoms.symptomsDate": 1, 
+                    "fromSymptoms.remarks": 1 ,
+                    "fromSymptoms.isCovid": 1,
+                    "fromSymptoms.covidDate": 1
+                } 
+            }
+         ]
+        );
+        if (symptoms.length === 0) return res.status(400).json({msg: 'El usuario no tiene síntomas'})
+        return res.json({ fromSymptoms: symptoms[0].fromSymptoms });
+    } catch (error) {
+        return res.json({ error: error }).status(500);
+    }
+};
+
 /**
  * Updates the health condition of the user.
  * @param req must have a healthCondition string
@@ -117,24 +157,23 @@ export const updateHealthCondition = async (req: Request, res: Response): Promis
     if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
     if (!Object.values(HealthCondition).includes(req.body.healthCondition)) 
         return res.status(400).json({msg: 'El valor proporcionado para healthCondition debe ser uno de los siguientes: healthy, risk o infected'});
-    // User from passport (auth methods)
+  
     const userReq = req.user as User; // user from passport
     const healthCondition = req.body.healthCondition as HealthCondition;
-
+  
     try {
         var isUpdated: boolean = true; // Handle if document is updated
-        // Update query
-        UserModel.findOneAndUpdate(
-            { _id: mongoose.Types.ObjectId(userReq.id) }, 
-            { $set: { healthCondition: healthCondition }},
+        await UserModel.findByIdAndUpdate(
+            userReq.id, 
+            { $set: { healthCondition } },
             { new: true, upsert: true },
             function (err, doc) { if (err) isUpdated = false; });
         // If updated, return status 200 and message
         if (isUpdated)
-            return res.json({msg: 'El estado se actualizó correctamente'});
-        // else, returns status 400 and message
+            return res.json({msg: 'La condición de salud del usuario ha sido actualizada'});
+      
         return res.status(400).json({ msg: 'Hubo un problema con la actualización' });
     } catch (error) {
-        return res.status(400).json({ error, ...{ msg: 'Hubo un problema con el registro'} });
+        return res.json({ error: error }).status(500);
     }
-};
+}
