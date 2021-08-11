@@ -140,3 +140,21 @@ export const getSymptoms = async (req: Request, res: Response): Promise<Response
         return res.json({ error: error }).status(500);
     }
 };
+
+// Update health condition of the user
+export const updateHealthCondition = async (req: Request, res: Response): Promise<Response> => {
+    if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
+    const userReq = req.user as User; // user from passport
+    try {
+        const { healthCondition } = req.body;
+        await UserModel.findByIdAndUpdate(
+            userReq.id, 
+            { $set: { healthCondition } }
+        );
+        return res.json({
+            msg: 'La condición de salud del usuario ha sido actualizada'
+        });
+    } catch (error) {
+        return res.json({ error: error }).status(500);
+    }
+}

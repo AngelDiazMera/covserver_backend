@@ -1,7 +1,7 @@
 import {Router} from "express";
 import passport from 'passport'
 
-import{ getUsers, signUp, signIn, getUserById, getMyUser, getSymptoms } from '../controllers/userController';
+import{ getUsers, signUp, signIn, getUserById, getMyUser, getSymptoms, updateHealthCondition } from '../controllers/userController';
 
 const router: Router = Router();
 const auth = passport.authenticate('jwt', { session: false })
@@ -18,7 +18,8 @@ router.route('/mine')
     .get(auth, getMyUser);
 
 router.route('/symptoms')
-    .get(auth, getSymptoms);
+    .get(auth, getSymptoms)
+    .put(auth, updateHealthCondition);
 
 router.route('/:id')
     .get(auth, getUserById);
