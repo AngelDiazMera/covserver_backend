@@ -167,7 +167,7 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
             },
             {
               "$group": {
-                "_id": null,
+                "_id": '$memberCode',
                 "members": {
                   "$push": "$members"
                 }
@@ -175,7 +175,7 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
             },
             {
               "$project": {
-                "_id": 0,
+                "_id": 1,
                 "members.userRef": 1,
                 "members.name": 1,
                 "members.lastName": 1,
@@ -250,7 +250,7 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
           },
           {
             "$group": {
-              "_id": null,
+              "_id": '$visitorCode',
               "visits": {
                 "$push": "$visits"
               }
@@ -258,7 +258,7 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
           },
           {
             "$project": {
-              "_id": 0,
+              "_id": 1,
               "visits.visitDate": 1,
               "visits.name": 1,
               "visits.lastName": 1,
