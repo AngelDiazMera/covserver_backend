@@ -2,11 +2,13 @@ import mongoose, { Schema, model } from "mongoose";
 
 export interface Groups extends mongoose.Document {
   name: String;
+  concatName?: String;
   memberCode: String;
   visitorCode: String;
   members?: [
     {
       userRef: String;
+      mobileToken: String;
     }
   ];
   enterpriseRef: String;
@@ -14,6 +16,7 @@ export interface Groups extends mongoose.Document {
     {
       userRef: String;
       visitDate: Date;
+      mobileToken: String;
     }
   ];
 }
@@ -21,11 +24,13 @@ export interface Groups extends mongoose.Document {
 // Schema definition for database
 const groupsSchema: Schema = new Schema({
   name: { type: String },
+  concatName: { type: String },
   memberCode: { type: String },
   visitorCode: { type: String },
   members: [
     {
       userRef: { type: Schema.Types.ObjectId, required: true },
+      mobileToken: { type: String, required: true },
     },
   ],
   enterpriseRef: {
@@ -37,6 +42,7 @@ const groupsSchema: Schema = new Schema({
     {
       userRef: { type: Schema.Types.ObjectId, required: true },
       visitDate: { type: Date, required: true },
+      mobileToken: { type: String, required: true },
     },
   ],
 });

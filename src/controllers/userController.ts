@@ -1,11 +1,15 @@
 //import packages
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken'
+
 import mongoose from 'mongoose'
 const {ObjectId} = mongoose.Types;
+
 //Import files
-import UserModel,{User} from '../models/User';
+import UserModel,{ HealthCondition, User } from '../models/User';
 import config from '../config/config';
+import GroupsModel, { Groups } from '../models/Groups';
+import { addMinutes } from '../lib/dateModifiers';
 
 // Get all the users registered in the collection
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
@@ -42,7 +46,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     if (user)
         return res.status(400).json({msg: 'El usuario con ese email ya ha sido registrado'});
     // Save the new user to database
-    const { name, lastName, gender, access, mobileToken } = req.body;
+    const { name, lastName, gender, access, mobileToken} = req.body;
     try {
         const mobileTokens: string[] = [mobileToken];
         const newUser: User = new UserModel({ name, lastName, gender, access, mobileTokens});
@@ -53,6 +57,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
             token: _createToken(newUser), 
         });
     } catch (error) {
+        console.log(error)
         return res.status(400).json({ error: error , msg: 'Hubo un problema con el registro'});
     }
 };
@@ -141,19 +146,33 @@ export const getSymptoms = async (req: Request, res: Response): Promise<Response
     }
 };
 
-// Update health condition of the user
+/**
+ * Updates the health condition of the user.
+ * @param req must have a healthCondition string
+ * @returns a json Response object
+ */
 export const updateHealthCondition = async (req: Request, res: Response): Promise<Response> => {
+    // Validations if data is missing
+    if (!req.body.healthCondition) return res.status(400).json({msg: 'Falta healthCondition'});
     if (!req.user) return res.status(400).json({msg: 'La referencia del usuario es incorrecta'});
+    if (!Object.values(HealthCondition).includes(req.body.healthCondition)) 
+        return res.status(400).json({msg: 'El valor proporcionado para healthCondition debe ser uno de los siguientes: healthy, risk o infected'});
+  
     const userReq = req.user as User; // user from passport
+    const healthCondition = req.body.healthCondition as HealthCondition;
+  
     try {
-        const { healthCondition } = req.body;
+        var isUpdated: boolean = true; // Handle if document is updated
         await UserModel.findByIdAndUpdate(
             userReq.id, 
-            { $set: { healthCondition } }
-        );
-        return res.json({
-            msg: 'La condición de salud del usuario ha sido actualizada'
-        });
+            { $set: { healthCondition } },
+            { new: true, upsert: true },
+            function (err, doc) { if (err) isUpdated = false; });
+        // If updated, return status 200 and message
+        if (isUpdated)
+            return res.json({msg: 'La condición de salud del usuario ha sido actualizada'});
+      
+        return res.status(400).json({ msg: 'Hubo un problema con la actualización' });
     } catch (error) {
         return res.json({ error: error }).status(500);
     }

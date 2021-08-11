@@ -19,6 +19,9 @@ router.route('/mine')
 
 router.route('/symptoms')
     .get(auth, getSymptoms)
+
+router.route('/healthCondition')
+
     .put(auth, updateHealthCondition);
 
 router.route('/:id')
