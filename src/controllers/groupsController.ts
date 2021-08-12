@@ -139,10 +139,9 @@ export const getUsersByToken = async (req: Request, res: Response): Promise<void
 
 // Delete group assignation of a user
 export const deleteUserFromGroup = async (req: Request, res: Response): Promise<void> => {
-    const userReq = req.user as User;
-    const userRef = userReq.id;
+    const userRef: string = req.body.userRef;
     const code: string = req.body.code;
-
+    
     try {
         const isMember = code.startsWith('M');
         if(isMember){
