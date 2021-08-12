@@ -17,7 +17,6 @@ export interface User extends mongoose.Document{
     name: String;
     lastName: String;
     gender: Gender;
-    healthCondition: HealthCondition;
     access: {
         email: String;
         password: String;
