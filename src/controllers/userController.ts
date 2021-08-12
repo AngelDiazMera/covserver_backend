@@ -2,14 +2,15 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken'
 
-import mongoose from 'mongoose'
-const {ObjectId} = mongoose.Types;
-
 //Import files
 import UserModel,{ HealthCondition, User } from '../models/User';
 import config from '../config/config';
-import GroupsModel, { Groups } from '../models/Groups';
 import { addMinutes } from '../lib/dateModifiers';
+import EnterpriseModel, { Enterprise } from '../models/Enterprise'
+import GroupsModel, { Groups } from '../models/Groups';
+//Dependencies of mongoose
+import mongoose, { Number } from 'mongoose'
+const {ObjectId} = mongoose.Types;
 
 // Get all the users registered in the collection
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
@@ -38,7 +39,7 @@ const _createToken = (user: User) => {
 // Saves an user and returns the user and the session
 export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     // Validate if data is completed
-    if (!req.body.name || !req.body.lastName || !req.body.gender || !req.body.access.password || !req.body.access.email || !req.body.mobileToken) 
+    if (!req.body.name || !req.body.lastName || !req.body.gender || !req.body.healthCondition|| !req.body.access.password || !req.body.access.email || !req.body.mobileToken) 
         return res.status(400).json({msg: 'Por favor envía tóken móvil, nombre, apellidos, género, correo y contraseña'});
     
     // Validate if a register with an specified email already exists
@@ -83,7 +84,10 @@ export const signIn = async (req: Request, res: Response): Promise<Response> => 
                 email: user.access.email, 
                 name: user.name, 
                 lastName: user.lastName,
-                gender: user.gender
+                gender: user.gender,
+                healthCondition: user.healthCondition,
+                infectedDate: user.infectedDate,
+                symptomsDate: user.symptomsDate
             }});
     
     return res.status(400).json({msg: 'El correo o la contraseña son incorrectas'});
@@ -177,3 +181,171 @@ export const updateHealthCondition = async (req: Request, res: Response): Promis
         return res.json({ error: error }).status(500);
     }
 }
+  
+//This get the codes only of members
+export const getMembers = async (req: Request, res: Response): Promise<Response|any > => {
+    if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+
+    const entReq = req.user as Enterprise; // user from passport 
+    
+    //Limit and nuber of elements that are ommited for skipt data, this is a request of the url 
+    const vSkip:any = req.query.skip; 
+    let skip: any = { };
+
+    //This is a validation, when the user set 0, the query is not set in the aggregate query
+    if(vSkip !== 0){
+      skip =  { 
+        $skip: parseInt(vSkip)
+      };  
+    } 
+
+    try {
+        const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
+        if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'}); 
+        const groups: any[] = await GroupsModel.aggregate([
+            { 
+                $match: {
+                    "enterpriseRef": ObjectId(enterprise.id)
+                } 
+            },
+            {
+              "$unwind": "$members"
+            },
+            {
+              "$lookup": {
+                "from": "users",
+                "localField": "members.userRef",
+                "foreignField": "_id",
+                "as": "membersJoined"
+              }
+            },
+            {
+              "$unwind": "$membersJoined"
+            },
+            {
+              "$addFields": {
+                "members": {
+                  "$mergeObjects": [
+                    "$members",
+                    "$membersJoined"
+                  ]
+                }
+              }
+            }, 
+            skip
+            ,{
+              $limit: 10
+            },
+            {
+              "$group": {
+                "_id": '$memberCode',
+                "users": {
+                  "$push": "$members"
+                }
+              }
+            },
+            {
+              "$project": {
+                "_id": 1,
+                "users.userRef": 1,
+                "users.name": 1,
+                "users.lastName": 1,
+                "users.gender": 1,
+                "users.healthCondition": 1,
+                "users.symptomsDate": 1,
+                "users.infectedDate": 1
+              }
+            }
+          ]
+        );
+        if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400);
+        res.json({ groups });     
+    } catch (error) {
+        res.json({ error: error , msg: `Error lenght`}).status(500);
+    }
+};
+
+//This get the codes only of visits 
+export const getVisits = async (req: Request, res: Response): Promise<Response|any > => {
+  if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
+
+  const entReq = req.user as Enterprise; // user from passport
+  
+  //Limit and nuber of elements that are ommited for skipt data, this is a request of the url 
+  const vSkip:any = req.query.skip;  
+  let skip: any = { };
+
+  //This is a validation, when the user set 0, the query is not set in the aggregate query
+  if(vSkip !== 0){
+    skip =  { 
+      $skip: parseInt(vSkip)
+    };  
+  } 
+
+  try { 
+    const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
+        if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'}); 
+        const groups: any = await GroupsModel.aggregate([
+          { 
+              $match: {
+                  "enterpriseRef": ObjectId(enterprise.id)
+              } 
+          }, 
+          {
+            "$unwind": "$visits"
+          },
+          {
+            "$lookup": {
+              "from": "users",
+              "localField": "visits.userRef",
+              "foreignField": "_id",
+              "as": "visitsJoined"
+            }
+          },
+          {
+            "$unwind": "$visitsJoined"
+          },
+          {
+            "$addFields": {
+              "visits": {
+                "$mergeObjects": [
+                  "$visits",
+                  "$visitsJoined"
+                ]
+              }
+            }
+          }, 
+          skip
+          ,{
+            $limit: 10
+          },
+          {
+            "$group": {
+              "_id": '$visitorCode',
+              "users": {
+                "$push": "$visits"
+              }
+            }
+          },
+          {
+            "$project": {
+              "_id": 1,
+              "users.visitDate": 1,
+              "users.name": 1,
+              "users.lastName": 1,
+              "users.symptomsDate": 1,
+              "users.infectedDate": 1,
+              "users.gender": 1,
+              "users.healthCondition": 1,
+              "users.userRef": 1
+            }
+          }
+        ]
+        );
+        if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400); 
+        res.json({ groups });
+  } catch (error) {
+    console.error(error);
+      res.json({ error: error , msg: `Error de API`}).status(500);
+  }
+};

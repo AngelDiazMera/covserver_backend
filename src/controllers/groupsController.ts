@@ -1,6 +1,5 @@
 // Imported packages
 import { Request, Response } from 'express';
-import mongoose from 'mongoose';
 const qrcode: any =  require('qrcode');
 // Imported files
 import EnterpriseModel, { Enterprise } from '../models/Enterprise';
@@ -12,7 +11,8 @@ import { GroupSubject, MemberObserver, VisitorObserver } from '../logic/notifier
 import GroupSubjects from '../logic/groupSubjects';
 import { Subject } from '../logic/observer';
 import { PushNotification } from '../middlewares/fcmNotifications';
-
+//Dependencies of mongoose
+import mongoose, { Number } from 'mongoose'
 const { ObjectId } = mongoose.Types;
 
 // Get all the groups registered in the collection
@@ -83,7 +83,7 @@ export const getQR = async (req: Request, res: Response): Promise<void> => {
 /**
  * Request to assign an user to a group as a `member` or a `visitor`.
  * */
-export const assignToGroup = async (req: Request, res: Response): Promise<Response> => {
+ export const assignToGroup = async (req: Request, res: Response): Promise<Response> => {
     // Missing data
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
     if (!req.body.code || !req.body.mobileToken) return res.status(400).json({msg: 'Por favor envíe código de asignación y token móvil'});
@@ -182,7 +182,7 @@ export const notifyInfected = async (req: Request, res: Response): Promise<Respo
         return res.json({error: error, msg: 'Hubo un problema con el envío'});
     }
 }
-
+////////////////////////////////////////////////////////////////////////////////////////
 export const getAlertData = async (req: Request, res: Response): Promise<Response> => {
     if (req.body.anonym == null || !req.body.userRef || !req.body.groupRef || !req.body.mobileToken) 
         return res.status(400).json({msg: 'Por favor envíe anonym, mobileToken, userRef y groupRef'});
@@ -214,5 +214,41 @@ export const getAlertData = async (req: Request, res: Response): Promise<Respons
     } catch (error) {
         console.log(error)
         return res.json({error: error, msg: 'Hubo un problema con el envío'});
+    }
+}
+ ////////////////////////////////////////////////////////////////////////////////////////
+// Get all the groups of an specific ID
+export const getUsersByToken = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const users: User[] = await UserModel.find();
+        console.log("Data de tokenMovil" + UserModel);
+        res.json({ users });
+    } catch (error) {
+        res.json({ error: error }).status(500);
+    }
+};
+
+// Delete group assignation of a user
+export const deleteUserFromGroup = async (req: Request, res: Response): Promise<void> => {
+    const userRef: string = req.body.userRef;
+    const code: string = req.body.code;
+    
+    try {
+        const isMember = code.startsWith('M');
+        if(isMember){
+            const group: Groups | null = await GroupsModel.findOneAndUpdate(
+                { memberCode: code },
+                { $pull: { members: { userRef: userRef } } }
+            );
+            res.json({ group, msg: 'Usuario eliminado del grupo' });
+        } else {
+            const group: Groups | null = await GroupsModel.findOneAndUpdate(
+                { visitorCode: code },
+                { $pull: { visits: { userRef: userRef } } }
+            );
+            res.json({ group, msg: 'Usuario eliminado del grupo' });
+        }
+    } catch (error) {
+        res.json({ error: error }).status(500);
     }
 }

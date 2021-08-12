@@ -1,7 +1,7 @@
 import {Router} from "express";
 import passport from 'passport'
 
-import{ getUsers, signUp, signIn, getUserById, getMyUser, getSymptoms, updateHealthCondition } from '../controllers/userController';
+import{ getUsers, signUp, signIn, getMembers , getVisits, getUserById, getMyUser, getSymptoms, updateHealthCondition  } from '../controllers/userController';
 
 const router: Router = Router();
 const auth = passport.authenticate('jwt', { session: false })
@@ -11,6 +11,12 @@ router.post('/signup', signUp);
 router.post('/signin', signIn);
 
 // Routes which need authentication
+router.route('/members')
+    .get(auth, getMembers);
+
+router.route('/visits')
+    .get(auth, getVisits);
+
 router.route('/')
     .get(auth, getUsers);
 
