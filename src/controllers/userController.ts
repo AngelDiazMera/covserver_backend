@@ -131,7 +131,7 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
     try {
         const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
         if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'}); 
-        const members: any[] = await GroupsModel.aggregate([
+        const groups: any[] = await GroupsModel.aggregate([
             { 
                 $match: {
                     "enterpriseRef": ObjectId(enterprise.id)
@@ -168,7 +168,7 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
             {
               "$group": {
                 "_id": '$memberCode',
-                "members": {
+                "users": {
                   "$push": "$members"
                 }
               }
@@ -176,19 +176,19 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
             {
               "$project": {
                 "_id": 1,
-                "members.userRef": 1,
-                "members.name": 1,
-                "members.lastName": 1,
-                "members.gender": 1,
-                "members.healthCondition": 1,
-                "members.symptomsDate": 1,
-                "members.infectedDate": 1
+                "users.userRef": 1,
+                "users.name": 1,
+                "users.lastName": 1,
+                "users.gender": 1,
+                "users.healthCondition": 1,
+                "users.symptomsDate": 1,
+                "users.infectedDate": 1
               }
             }
           ]
         );
-        if (members.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400);
-        res.json({ members });     
+        if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400);
+        res.json({ groups });     
     } catch (error) {
         res.json({ error: error , msg: `Error lenght`}).status(500);
     }
@@ -214,7 +214,7 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
   try { 
     const enterprise: Enterprise | null = await EnterpriseModel.findById(entReq.id);
         if (!enterprise) return res.status(404).json({msg: 'No se pudo encontrar la empresa'}); 
-        const visits: any = await GroupsModel.aggregate([
+        const groups: any = await GroupsModel.aggregate([
           { 
               $match: {
                   "enterpriseRef": ObjectId(enterprise.id)
@@ -251,7 +251,7 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
           {
             "$group": {
               "_id": '$visitorCode',
-              "visits": {
+              "users": {
                 "$push": "$visits"
               }
             }
@@ -259,19 +259,20 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
           {
             "$project": {
               "_id": 1,
-              "visits.visitDate": 1,
-              "visits.name": 1,
-              "visits.lastName": 1,
-              "visits.symptomsDate": 1,
-              "visits.infectedDate": 1,
-              "visits.gender": 1,
-              "visits.healthCondition": 1
+              "users.visitDate": 1,
+              "users.name": 1,
+              "users.lastName": 1,
+              "users.symptomsDate": 1,
+              "users.infectedDate": 1,
+              "users.gender": 1,
+              "users.healthCondition": 1,
+              "users.userRef": 1
             }
           }
         ]
         );
-        if (visits.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400); 
-        res.json({ visits });
+        if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400); 
+        res.json({ groups });
   } catch (error) {
     console.error(error);
       res.json({ error: error , msg: `Error de API`}).status(500);
