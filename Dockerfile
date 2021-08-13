@@ -12,6 +12,4 @@ EXPOSE 5000
 
 RUN npm run build 
 
-ADD /src/config/*.json ./build/src/config/
-
 CMD ["npm", "run", "start"]
