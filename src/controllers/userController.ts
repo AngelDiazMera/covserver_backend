@@ -259,9 +259,11 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
           ]
         );
         if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400);
-        res.json({ groups });     
+
+        const total = groups.reduce((acc:number, curr:any) => acc + curr.users.length, 0);
+        return res.json({ groups, total });
     } catch (error) {
-        res.json({ error: error , msg: `Error lenght`}).status(500);
+        return res.json({ error: error , msg: `Error lenght`}).status(500);
     }
 };
 
@@ -343,9 +345,10 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
         ]
         );
         if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400); 
-        res.json({ groups });
+        const total = groups.reduce((acc:number, curr:any) => acc + curr.users.length,0);
+        return res.json({ groups, total });
   } catch (error) {
     console.error(error);
-      res.json({ error: error , msg: `Error de API`}).status(500);
+    return res.json({ error: error , msg: `Error de API`}).status(500);
   }
 };
