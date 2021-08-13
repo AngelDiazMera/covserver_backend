@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose"
+import mongoose, { Schema, model, Date } from "mongoose"
 import bcrypt from 'bcrypt'
 
 enum Gender {
@@ -6,14 +6,25 @@ enum Gender {
     female = 'female',
     other = 'other'
 };
+
+export enum HealthCondition {
+    healthy = 'healthy',
+    risk = 'risk',
+    infected = 'infected'
+};
+
 export interface User extends mongoose.Document{
     name: String;
     lastName: String;
-    gender: Gender;
+    gender: Gender; 
+    symptomsDate: Date; 
+    infectedDate: Date;
     access: {
         email: String;
         password: String;
     };
+    healthCondition?: HealthCondition;
+    mobileTokens?: String[];
     comparePassword: (password: String) => Promise<boolean>;
 };
 
@@ -34,7 +45,21 @@ const userSchema: Schema<User> = new Schema({
             message: '{VALUE} no es soportado'
         },
         required: true
+    },  
+    healthCondition: {
+        type: String,
+        enum: {
+            values: ['healthy', 'risk', 'infected'],
+            message: '{VALUE} no es soportado',
+            default: 'healthy'
+        }
     },
+    symptomsDate:{
+        type:Date
+    }, 
+    infectedDate:{
+        type:Date
+    }, 
     access:{
         email:{
             type: String,
@@ -49,7 +74,9 @@ const userSchema: Schema<User> = new Schema({
     mobileTokens: [{
         type: String,
         required: true,
-        unique: true
+        // unique: true,
+        // sparse: true,
+        default: ''
     }]
 });
 
