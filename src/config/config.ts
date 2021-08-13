@@ -3,7 +3,7 @@ import path from 'path'
 export default {
     jwtSecret: process.env.JWT_SECRET || 'somesecrettoken',
     DB: {
-        URI: process.env.MONGODB_URI || 'mongodb://localhost/covserver_data',
+        URI: process.env.MONGODB_URI || 'mongodb+srv://covserver_root:tv0p5iotPK9UBqeF@principal.mv1mb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', //'mongodb://localhost/covserver_data',
         USER: process.env.MONGODB_USER,
         PASSWORD: process.env.MONGODB_PSW
     },
