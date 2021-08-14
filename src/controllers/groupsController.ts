@@ -25,15 +25,20 @@ export const getGroups = async (req: Request, res: Response): Promise<void> => {
     }
 };
 // Get an group collection by ID
-export const getGroupById = async (req: Request, res: Response): Promise<void> => {
-    const id: String = req.params.id;
+export const getGroupByCode = async (req: Request, res: Response): Promise<Response> => {
+    const code: String = req.params.code.toUpperCase();
     try {
-        const groups: Groups | null = await GroupsModel.findById(id);
-        res.json({ groups });
+        const group: Groups | null = await GroupsModel.findOne({ $or: [
+            { memberCode: code }, { visitorCode: code } 
+        ]});
+        if (!group) 
+            return res.status(400).json({ msg: 'No se pudo encontrar el código' }); 
+        return res.json({ group });
     } catch (error) {
-        res.json({ error: error }).status(500);
+        return res.status(500).json({ error: error });
     }
 };
+
 // Saves a group collection
 export const saveGroup = async (req: Request, res: Response): Promise<void> => {
     const { name } = req.body;
@@ -122,7 +127,6 @@ export const getQR = async (req: Request, res: Response): Promise<void> => {
                 visit.userRef == userReq.id &&
                 visit.visitDate > addMinutes(today, -waiting));
             if (pos != -1 && addMinutes(group.visits![pos!].visitDate, waiting) > today){ 
-                console.log(addMinutes(group.visits![pos!].visitDate, waiting), ' > ', today)
                 return res.status(400).json({ msg: `Debe esperar al menos ${waiting} minutos para registrarse nuevamente` });
             }
             // Push visit to array
