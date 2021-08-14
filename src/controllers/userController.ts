@@ -258,12 +258,12 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
             }
           ]
         );
-        if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400);
+        if (groups.length === 0) return res.status(200).json({groups: [], msg: 'Aún no hay registros'});
 
         const total = groups.reduce((acc:number, curr:any) => acc + curr.users.length, 0);
         return res.json({ groups, total });
     } catch (error) {
-        return res.json({ error: error , msg: `Error lenght`}).status(500);
+        return res.status(500).json({ error: error , msg: 'Hubo un error inesperado'});
     }
 };
 
@@ -344,11 +344,11 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
           }
         ]
         );
-        if (groups.length === 0) return res.json({msg: 'Error al obtener los datos.'}).status(400); 
+        if (groups.length === 0) return res.status(200).json({groups: [],msg: 'Aún no hay registros'}); 
         const total = groups.reduce((acc:number, curr:any) => acc + curr.users.length,0);
         return res.json({ groups, total });
   } catch (error) {
     console.error(error);
-    return res.json({ error: error , msg: `Error de API`}).status(500);
+    return res.status(500).json({ error: error , msg: 'Hubo un error inesperado'});
   }
 };
