@@ -2,7 +2,7 @@ import {Router} from 'express';
 import passport from 'passport';
 
 
-import { getGroups, saveGroup, assignToGroup, getGroupById, getQR, deleteUserFromGroup, notifyInfected, getAlertData } from '../controllers/groupsController';
+import { getGroups, saveGroup, assignToGroup, getGroupByCode, getQR, deleteUserFromGroup, notifyInfected, getAlertData } from '../controllers/groupsController';
 
 const router: Router = Router();
 const auth = passport.authenticate('jwt', { session: false})
@@ -27,7 +27,7 @@ router.route('/')
     .get(getGroups) 
     .post(auth, saveGroup);
 
-router.route('/:id')
-    .get(getGroupById);
+router.route('/:code')
+    .get(getGroupByCode);
 
 export default router;
