@@ -85,4 +85,15 @@ userSchema.methods.comparePassword = async function (password: string): Promise<
     return await bcrypt.compare(password, String(this.access.password));
 }
 
+// Hash password into a bycript digest
+userSchema.pre<User>('save', async function(next) {
+    const user = this; // document to save
+    // if password is not being modified
+    if (!user.isModified('access.password')) return next();
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(user.access.password.toString(), salt);
+    user.access.password = hash;
+});
+
 export default model<User>('User', userSchema);

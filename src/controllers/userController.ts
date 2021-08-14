@@ -39,7 +39,7 @@ const _createToken = (user: User) => {
 // Saves an user and returns the user and the session
 export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     // Validate if data is completed
-    if (!req.body.name || !req.body.lastName || !req.body.gender || !req.body.healthCondition|| !req.body.access.password || !req.body.access.email || !req.body.mobileToken) 
+    if (!req.body.name || !req.body.lastName || !req.body.gender|| !req.body.access.password || !req.body.access.email || !req.body.mobileToken) 
         return res.status(400).json({msg: 'Por favor envía tóken móvil, nombre, apellidos, género, correo y contraseña'});
     
     // Validate if a register with an specified email already exists
@@ -50,7 +50,7 @@ export const signUp = async (req: Request, res: Response): Promise<Response> =>{
     const { name, lastName, gender, access, mobileToken} = req.body;
     try {
         const mobileTokens: string[] = [mobileToken];
-        const newUser: User = new UserModel({ name, lastName, gender, access, mobileTokens});
+        const newUser: User = new UserModel({...{ name, lastName, gender, access, mobileTokens}, ... { healthCondition: 'healthy'}});
         await newUser.save();
         return res.status(200).json({
             newUser, 
@@ -90,7 +90,7 @@ export const signIn = async (req: Request, res: Response): Promise<Response> => 
                 symptomsDate: user.symptomsDate
             }});
     
-    return res.status(400).json({msg: 'El correo o la contraseña son incorrectas'});
+    return res.status(400).json({msg: 'La contraseña es incorrecta'});
 };
 
 
