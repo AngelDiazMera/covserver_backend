@@ -157,11 +157,7 @@ export default class GroupSubjects {
             const visitorSbj = subject as GroupSubject;
             // Complete group
             const globalSbj = global.get(idGroup) as GroupSubject;
-
-            // Sort dates and reverse them. This way we take the last visits only
-            globalSbj.visits.sort((first: VisitorObserver, second: VisitorObserver) =>
-                first.visitDate.getTime() - second.visitDate.getTime());
-            const reversedVisits = globalSbj.visits.reverse(); 
+            const reversedVisits = globalSbj.visits.reverse(); // Last dates (can be sorted)
 
             const newSubject = new GroupSubject(globalSbj.id.toString())
             // Adding visits

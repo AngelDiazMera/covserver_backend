@@ -1,15 +1,7 @@
-FROM node:12
-
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install\
-    && npm install typescript -g
-
+FROM node:13-alpine
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 COPY . .
+RUN npm install
 EXPOSE 5000
-
-RUN npm run build 
-
-CMD ["npm", "run", "start"]
+CMD npm run start

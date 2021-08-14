@@ -99,9 +99,11 @@ export class GroupSubject implements Subject{
         const topicName = `${this._lastInfected.id}_${formatDateToTopic(this._lastInfected.visitDate)}`;
         
         if (memberTokens.length > 0){
+            // console.log('MEMBERS', memberTokens)
             await sendPushToTopic(`members_${topicName}`, memberTokens, membersMessage);
         }
         if (visitorsTokens.length > 0){
+            // console.log('VISITS', visitorsTokens)
             await sendPushToTopic(`visits_${topicName}`, visitorsTokens, visitorsMessage);
         }
     }
