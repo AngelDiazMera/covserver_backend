@@ -86,7 +86,7 @@ userSchema.methods.comparePassword = async function (password: string): Promise<
 }
 
 // Hash password into a bycript digest
-userSchema.pre<User>('save', async function(next) {
+userSchema.pre<User>('save', async function (next) {
     const user = this; // document to save
     // if password is not being modified
     if (!user.isModified('access.password')) return next();

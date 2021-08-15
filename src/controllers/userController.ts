@@ -10,6 +10,7 @@ import EnterpriseModel, { Enterprise } from '../models/Enterprise'
 import GroupsModel, { Groups } from '../models/Groups';
 //Dependencies of mongoose
 import mongoose, { Number } from 'mongoose'
+import { hashBcrypt } from '../lib/hash';
 const {ObjectId} = mongoose.Types;
 
 // Get all the users registered in the collection
@@ -93,6 +94,28 @@ export const signIn = async (req: Request, res: Response): Promise<Response> => 
     return res.status(400).json({msg: 'La contraseña es incorrecta'});
 };
 
+// Updates user data
+export const updateMyUser = async (req: Request, res: Response): Promise<Response> => {
+  if (!req.body) 
+      return res.status(400).json({msg: 'Debe especificar al menos un atributo a modificar'});
+  
+  const entReq = req.user as User;
+  const userObj = req.body;
+
+  if (userObj.hasOwnProperty('access.password')) 
+    userObj['access.password'] = await hashBcrypt(userObj['access.password'], 10);
+
+  try{
+    const user: User | null = await UserModel.findByIdAndUpdate(entReq.id,userObj);
+    if (!user) 
+      return res.status(404).json({
+        msg: 'No se puede actualizar el usuario'
+      });
+    return res.json({ msg: "Datos actualizados exitosamente!" });
+  } catch (error){
+    return res.status(500).json({ error: error , msg: 'Hubo un problema con el registro'});
+  }
+}
 
 export const getMyUser = async (req: Request, res: Response): Promise<Response> => {
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});

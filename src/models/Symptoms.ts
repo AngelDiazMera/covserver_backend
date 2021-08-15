@@ -11,8 +11,8 @@ export interface Symptoms extends Document {
 
 // Schema definition for database
 const symptomsSchema: Schema<Symptoms> = new Schema({
-    symptoms: { type: [String], required: true },
-    symptomsDate: { type: Date, required: true },
+    symptoms: { type: [String] },
+    symptomsDate: { type: Date },
     remarks: { type: String },
     isCovid: { type: Boolean },
     covidDate: { type: Date },
