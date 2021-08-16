@@ -42,6 +42,7 @@ export const sendPushToTopic = async (group: string, tokens: string[], notificat
     // };
     // const filteredTokens = tokens.filter(onlyUnique);
     const message = {...{topic: group}, ...notification};
+    console.log('Mensaje desde FCM:', message.data);
     await admin.messaging().subscribeToTopic(tokens, `/topics/${group}`);
     await _sendMessage(message);
 };

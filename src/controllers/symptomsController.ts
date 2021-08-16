@@ -10,8 +10,6 @@ export const saveSymptoms = async (req: Request, res: Response): Promise<Respons
     if (!req.body.healthCondition) return res.status(400).json({msg: 'Hace falta healthCondition'});
     const { symptoms, symptomsDate, remarks, isCovid, covidDate } = req.body;
 
-    console.log(req.body)
-
     const userReq = req.user as User;
     const userRef = userReq.id;
     const healthCondition = req.body.healthCondition as HealthCondition;
@@ -41,8 +39,6 @@ export const saveSymptoms = async (req: Request, res: Response): Promise<Respons
 
 // Delete symptoms from the collection
 export const deleteSymptoms = async (req: Request, res: Response): Promise<Response> => {
-    console.log(req.body)
-
     const userReq = req.user as User;
     const userRef = userReq.id;
     

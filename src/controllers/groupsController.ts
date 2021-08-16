@@ -155,6 +155,7 @@ export const notifyInfected = async (req: Request, res: Response): Promise<Respo
     const token = req.body.mobileToken;
 
     try {
+        console.log('Recibido: ', {anonym: req.body.anonym, symptomsDate: req.body.symptomsDate})
         // Parses date from client
         const parsedDate = Date.parse(req.body.symptomsDate);
         const date = new Date(parsedDate);
@@ -174,6 +175,7 @@ export const notifyInfected = async (req: Request, res: Response): Promise<Respo
         const allSubjects = GroupSubjects.getInstance();
         const visitorSubjects = await GroupSubjects.searchWhereId(userReq.id);
         var matchedSubjects = GroupSubjects.joinInfectedAndGlobal(visitorSubjects, allSubjects);
+
         // Notify related subjects
         for (const [id, group] of matchedSubjects as Map<string,GroupSubject>) 
             group.registerInfected(
