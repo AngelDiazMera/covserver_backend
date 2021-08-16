@@ -210,12 +210,18 @@ export const getAlertData = async (req: Request, res: Response): Promise<Respons
         var joinDates:Date[] = [];
         for (const [token, dates] of datesMap) 
             joinDates = [...joinDates, ...dates];
+
+        
+        const onlyUnique = (date: Date, index: number, self: Date[]) => {
+            return self.indexOf(date) === index;
+        };
+        const filteredDates = joinDates.filter(onlyUnique);
         
 
         return res.json({
             ...(!req.body.anonym && {completeName: `${user?.name} ${user?.lastName}`}),
             groupName: group?.name,
-            dates: concatDates(joinDates)
+            dates: concatDates(filteredDates)
         });
     } catch (error) {
         console.log(error)
