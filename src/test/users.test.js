@@ -1,18 +1,28 @@
-const axios = require("axios"); //It is not installed but is required 
-const request = require("supertest") 
-const options = {
-    method: 'GET',
-    url: 'http://localhost:5000/enterprise/groups',
-    headers: {
-      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxMTZiNzg3NDQ0YmMwM2NlNGZlNmJlZSIsImVtYWlsIjoiYW50b25pbzE1MkBtaWNvcnJlb3VwcC5lZHUubXgiLCJ0eXBlIjoiZW50ZXJwcmlzZSIsImlhdCI6MTYyODkwODE0OSwiZXhwIjoxNjMwMTE3NzQ5fQ.iQp9-B389OCrcCY9WMkm8W65ypuoSIelRGj_-KzeFmg'
+const axios = require("axios");
+const request = require("supertest");
+
+const postConfig = {
+  method: "POST",
+  url: "http://localhost:5000/user/signup",
+  body: {
+    "name": "Test",
+    "lastName":"Testing",
+    "gender": "male",
+    "mobileToken": "z8X3Tp8UT8u8ePhqhy1-Lv:APA91bGdo8LcuPa79kPbwJD8D_r71EUHZhN7j9hGRJP48dQcNcyvDTI4MzLBeBJhW05hPVJUXMfTVykheYfBwMbKJyW_eG_ZFV_ZcOjTY_yqHut50_CFT06CUK6k09D-A_nTest-z6M1",
+    "access": {
+        "email": "testing@test.com",
+        "password": "test123"
     }
-  };
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxMTZiNzg3NDQ0YmMwM2NlNGZlNmJlZSIsImVtYWlsIjoiYW50b25pbzE1MkBtaWNvcnJlb3VwcC5lZHUubXgiLCJ0eXBlIjoiZW50ZXJwcmlzZSIsImlhdCI6MTYyODkwODE0OSwiZXhwIjoxNjMwMTE3NzQ5fQ.iQp9-B389OCrcCY9WMkm8W65ypuoSIelRGj_-KzeFmg"
-it('respond with json containing the data of GROUPS', async done  => {
-     
-      await axios.request(options).expect(200,done()).then(function (response) {
-        console.log(response.data)  
-     }) 
-    
-})
-  
+  }
+};
+
+describe("POST /user/signup", () => {
+  it("should create a new mobile user and respond with a json", async (done) => {
+    await axios
+      .request(postConfig)
+      .expect(200, done())
+      .then(function (response) {
+        console.log(response.data);
+      });
+  });
+});

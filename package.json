@@ -9,23 +9,26 @@
     "build": "tsc",
     "dev": "nodemon",
     "start": "node build/src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha src/test/*.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.2",
     "firebase-admin": "^9.11.0",
     "jsonwebtoken": "^8.5.1",
+    "mocha": "^9.0.3",
     "mongoose": "^5.13.2",
     "morgan": "^1.10.0",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
-    "qrcode": "^1.4.4"
+    "qrcode": "^1.4.4",
+    "supertest": "^6.1.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
