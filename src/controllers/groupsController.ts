@@ -56,7 +56,7 @@ export const saveGroup = async (req: Request, res: Response): Promise<void> => {
         const groups: Groups = new GroupsModel({ name, concatName, memberCode, visitorCode, enterpriseRef });
         await groups.save();
         // Save subject due to notification purposes
-        GroupSubjects.addToSet(groups.id, new GroupSubject(name));
+        GroupSubjects.addToSet(groups.id, new GroupSubject(groups.id));
         res.json({groups, msg: 'Group saved on database'});
     } catch (error) {
         res.json({ error: error }).status(500);

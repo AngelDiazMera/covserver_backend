@@ -30,7 +30,6 @@ export default class GroupSubjects {
         try {
             const groups = await GroupsModel.find({}, 
                 {
-                    'name'               : 1,
                     'members.userRef'    : 1, 
                     'members.mobileToken': 1, 
                     'visits.userRef'     : 1, 
@@ -122,7 +121,6 @@ export default class GroupSubjects {
         try {
             const groups: Groups[] = await GroupsModel.aggregate([
                 { $project : {   // Projection: filter visits and members array
-                    name:1,
                     visits: {
                         $filter: {
                             input: '$visits',

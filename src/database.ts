@@ -12,7 +12,7 @@ const dbOptions: ConnectionOptions = {
 mongoose.connect(config.DB.URI, dbOptions)
 
 // If wants to debug queries and log them into console
-// mongoose.set('debug', true);
+mongoose.set('debug', true);
 
 const connection = mongoose.connection;
 // When conection is open
