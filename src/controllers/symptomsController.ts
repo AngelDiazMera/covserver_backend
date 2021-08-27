@@ -16,10 +16,15 @@ export const saveSymptoms = async (req: Request, res: Response): Promise<Respons
 
     try {
         var hasError: boolean = false;
-        const symptomsReg: Symptoms = await SymptomsModel.findByIdAndUpdate( userRef,
-            { userRef, symptoms, symptomsDate, remarks, isCovid, covidDate },
-            { upsert: true, new: true, setDefaultsOnInsert: true },
-            function(error, result) { if (error) hasError = true; });
+        const symptomsReg: Symptoms =  new SymptomsModel({ 
+            userRef, symptoms, symptomsDate, remarks, isCovid, covidDate,
+            risk: healthCondition === 'healthy' ? 'none': healthCondition
+        });
+        await symptomsReg.save();
+        // await SymptomsModel.findByIdAndUpdate( userRef,
+        //     { userRef, symptoms, symptomsDate, remarks, isCovid, covidDate },
+        //     { upsert: true, new: true, setDefaultsOnInsert: true },
+        //     function(error, result) { if (error) hasError = true; });
         
         var isUpdated: boolean = true; // Handle if document is updated
         await UserModel.findByIdAndUpdate(
@@ -29,8 +34,6 @@ export const saveSymptoms = async (req: Request, res: Response): Promise<Respons
             function (err, doc) { if (err) hasError = true; });
 
         if (hasError) return res.status(400).json({ msg: 'Hubo un problema con la base de datos.' });
-        // new SymptomsModel({ userRef, symptoms, symptomsDate, remarks, isCovid, covidDate });
-        // await symptomsReg.save();
         return res.json({ symptomsReg, msg: 'Symptoms saved on database' });
     } catch (error) {
         return res.json({ error: error }).status(500);
