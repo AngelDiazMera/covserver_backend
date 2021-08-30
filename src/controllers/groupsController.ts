@@ -57,7 +57,7 @@ export const saveGroup = async (req: Request, res: Response): Promise<void> => {
         await groups.save();
         // Save subject due to notification purposes
         GroupSubjects.addToSet(groups.id, new GroupSubject(name));
-        res.json({groups, msg: 'Group saved on database'});
+        res.json({groups, msg: 'Código registrado!'});
     } catch (error) {
         res.json({ error: error }).status(500);
     }
@@ -254,6 +254,18 @@ export const deleteUserFromGroup = async (req: Request, res: Response): Promise<
             );
             res.json({ group, msg: 'Usuario eliminado del grupo' });
         }
+    } catch (error) {
+        res.json({ error: error }).status(500);
+    }
+}
+
+//Delete code
+export const deleteCode = async (req: Request, res: Response): Promise<void> => {
+    const id:any = req.query._id; 
+    try {
+        const group: Groups | null = await GroupsModel.findByIdAndDelete(id); 
+        res.json({ msg: "Código eliminado!" });
+
     } catch (error) {
         res.json({ error: error }).status(500);
     }
