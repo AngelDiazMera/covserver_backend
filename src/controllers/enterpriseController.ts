@@ -126,6 +126,16 @@ export const updateEnterprise = async (req: Request, res: Response): Promise<voi
 export const getGroups = async (req: Request, res: Response): Promise<Response> => {
     if (!req.user) return res.status(400).json({msg: 'La referencia de la empresa es incorrecta'});
     const entReq = req.user as Enterprise; // user from passport
+    //Limit and nuber of elements that are ommited for skipt data, this is a request of the url 
+    const vSkip:any = req.query.skip; 
+    let skip: any = { };
+
+    //This is a validation, when the user set 0, the query is not set in the aggregate query
+    if(vSkip !== 0){
+      skip =  { 
+        $skip: parseInt(vSkip)
+      };  
+    } 
     try {
         const groups: any[] = await EnterpriseModel.aggregate([
             {
@@ -142,7 +152,28 @@ export const getGroups = async (req: Request, res: Response): Promise<Response> 
                 }
            },
            {
-               $project: {"groups._id": 1, "groups.name": 1, "groups.memberCode": 1, "groups.visitorCode": 1}
+             "$unwind": "$groups"
+           },
+           skip
+           ,{
+            $limit: 10
+           },
+            {
+                "$group": {
+                "_id": null,
+                "groups": {
+                    "$push": "$groups"
+                }
+                }
+            },
+           {
+               $project: {
+                '_id':0,
+                'groups.members':0,
+                'groups.visits':0,
+                'groups.enterpriseRef':0,
+                'groups.__v':0
+               }
            }
          ]
         );
