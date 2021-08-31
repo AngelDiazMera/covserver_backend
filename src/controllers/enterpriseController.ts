@@ -142,7 +142,7 @@ export const getGroups = async (req: Request, res: Response): Promise<Response> 
                 }
            },
            {
-               $project: {_id: 0, "groups.name": 1, "groups.memberCode": 1, "groups.visitorCode": 1}
+               $project: {"groups._id": 1, "groups.name": 1, "groups.memberCode": 1, "groups.visitorCode": 1}
            }
          ]
         );
