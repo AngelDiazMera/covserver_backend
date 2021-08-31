@@ -264,3 +264,15 @@ export const deleteUserFromGroup = async (req: Request, res: Response): Promise<
         res.json({ error: error }).status(500);
     }
 }
+
+//Delete code
+export const deleteCode = async (req: Request, res: Response): Promise<void> => {
+    const id:any = req.query._id; 
+    try {
+        const group: Groups | null = await GroupsModel.findByIdAndDelete(id); 
+        res.json({ msg: "Código eliminado!" });
+
+    } catch (error) {
+        res.json({ error: error }).status(500);
+    }
+}
