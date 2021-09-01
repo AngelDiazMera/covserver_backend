@@ -54,3 +54,37 @@ export const concatDates = (dates: Date[]): string => {
     dates.forEach((date, idx) => concat += `${formatDateToMini(date)}${idx === (dates.length - 1) ? '': ','}`);
     return concat;
 }
+
+/**
+ * Returns the first or last day of a specific month
+ * @param opt Accept 'first' or 'last'.
+ * @param day Day of the week. Range: 0 - 6
+ * @param month Month to search. Range: 0 - 11
+ * @param currentDate Current date
+ */
+ const getDay = (opt: string, day: number, month: number, currentDate: Date): Date => {
+    if (opt === 'first') {
+        var firstDay = new Date(currentDate.getFullYear(), month, 1);
+        var dif = Math.abs( firstDay.getDay() - day - 8);
+        firstDay.setDate(firstDay.getDate() + dif > 8 ?  dif - 7: dif);
+        return firstDay;
+    }
+    var lastDay = new Date(currentDate.getFullYear(), month + 1, 0);
+    var dif = lastDay.getDay() - day;
+    dif = dif < 0 ? 7 + dif : dif;
+    lastDay.setDate(lastDay.getDate() - dif);
+    return lastDay
+}
+/**
+ * Modify a date with Mexico City GMT
+ * @param date date to modify
+ * @returns a modified date
+ */
+export const getGMTDate = (date: Date): Date => {
+    const summerBegin =  getDay('first', 0, 3, date);
+    const summerEnd =  getDay('last', 6, 9, date);
+
+    let GMT = date >= summerBegin && date <= summerEnd ? -5 : -60;
+    date.setMinutes(date.getMinutes() + GMT * 60)
+    return date;
+}

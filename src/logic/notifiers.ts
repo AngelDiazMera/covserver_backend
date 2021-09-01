@@ -83,7 +83,7 @@ export class GroupSubject implements Subject{
             data: { ...message.data, ...{ type: 'visit_infection' }},
             notification: {
                 title: '🚌 Alerta de infección 🦠',
-                body: 'Pudiste haber tenido contacto con un infectado por Covid-19.'
+                body: 'Pudiste haber tenido contacto con una persona contagiada de Covid-19.'
             }
         }
 
@@ -91,7 +91,7 @@ export class GroupSubject implements Subject{
             data: { ...message.data, ...{ type: 'member_infection' }},
             notification: {
                 title: '💼 Alerta de infección 🦠',
-                body: 'Alguno de tus grupos reportó un infectado con Covid-19.'
+                body: 'Alguno de tus grupos reportó  una persona contagiada de Covid-19.'
             }
         }
 
