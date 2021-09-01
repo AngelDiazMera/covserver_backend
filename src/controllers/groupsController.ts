@@ -5,7 +5,7 @@ const qrcode: any =  require('qrcode');
 import EnterpriseModel, { Enterprise } from '../models/Enterprise';
 import GroupsModel, { Groups } from '../models/Groups';
 import UserModel, { User } from '../models/User';
-import { addMinutes, concatDates, formatDateToSpanish } from '../lib/dateModifiers';
+import { addMinutes, concatDates, formatDateToSpanish, getGMTDate } from '../lib/dateModifiers';
 // Due to the observer pattern
 import { GroupSubject, MemberObserver, VisitorObserver } from '../logic/notifiers';
 import GroupSubjects from '../logic/groupSubjects';
@@ -121,7 +121,7 @@ export const getQR = async (req: Request, res: Response): Promise<void> => {
             groupSbj?.attach(new MemberObserver(userReq.id, token)); // TODO: Change to token
         }
         else {
-            const today = new Date();
+            const today = getGMTDate(new Date());
             // Check if visit has already been registered in some minutes
             const pos = group.visits?.findIndex( visit => 
                 visit.userRef == userReq.id &&
@@ -158,7 +158,7 @@ export const notifyInfected = async (req: Request, res: Response): Promise<Respo
         console.log('Recibido: ', {anonym: req.body.anonym, symptomsDate: req.body.symptomsDate})
         // Parses date from client
         const parsedDate = Date.parse(req.body.symptomsDate);
-        const date = new Date(parsedDate);
+        const date = getGMTDate(new Date(parsedDate));
         // Message of FCM push notification
         const message: PushNotification = {
             data: {
@@ -179,7 +179,7 @@ export const notifyInfected = async (req: Request, res: Response): Promise<Respo
         // Notify related subjects
         for (const [id, group] of matchedSubjects as Map<string,GroupSubject>) 
             group.registerInfected(
-                new VisitorObserver(userReq.id, token, new Date()), message);
+                new VisitorObserver(userReq.id, token, getGMTDate(new Date())), message);
         
         // TODO: Implement update for health state of the user to 'infected'
         return res.json({msg: 'El mensaje se envió satisfactoriamente'});
