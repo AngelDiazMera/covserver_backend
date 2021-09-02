@@ -9,7 +9,7 @@ import { addMinutes } from '../lib/dateModifiers';
 import EnterpriseModel, { Enterprise } from '../models/Enterprise'
 import GroupsModel, { Groups } from '../models/Groups';
 //Dependencies of mongoose
-import mongoose, { Number } from 'mongoose'
+import mongoose, { Number, ObjectId } from 'mongoose'
 import { hashBcrypt } from '../lib/hash';
 const {ObjectId} = mongoose.Types;
 
@@ -246,6 +246,14 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
               "$unwind": "$membersJoined"
             },
             {
+              "$lookup": {
+                'from': 'symptoms',
+                'localField': 'membersJoined._id',
+                'foreignField': 'userRef',
+                'as': 'membersJoined.symptoms'
+              }
+            },
+            {
               "$addFields": {
                 "members": {
                   "$mergeObjects": [
@@ -276,7 +284,8 @@ export const getMembers = async (req: Request, res: Response): Promise<Response|
                 "users.gender": 1,
                 "users.healthCondition": 1,
                 "users.symptomsDate": 1,
-                "users.infectedDate": 1
+                "users.infectedDate": 1,
+                "users.symptoms": 1
               }
             }
           ]
@@ -331,6 +340,14 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
             "$unwind": "$visitsJoined"
           },
           {
+            "$lookup": {
+              'from': 'symptoms',
+              'localField': 'visitsJoined._id',
+              'foreignField': 'userRef',
+              'as': 'visitsJoined.symptoms'
+            }
+          },
+          {
             "$addFields": {
               "visits": {
                 "$mergeObjects": [
@@ -362,7 +379,8 @@ export const getVisits = async (req: Request, res: Response): Promise<Response|a
               "users.infectedDate": 1,
               "users.gender": 1,
               "users.healthCondition": 1,
-              "users.userRef": 1
+              "users.userRef": 1,
+              "users.symptoms": 1
             }
           }
         ]
