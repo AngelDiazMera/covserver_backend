@@ -1,6 +1,12 @@
-# CovServer back office
+# CovServer API
 
-Backend of CovServer services.
+Monolithic covserver api based on ExpressJs.
+
+Important features:
+- FCM notifications per time and dynamic areas management
+- Authentication by JWT 
+- Storage and cache recover onto cloud no SQL databases.
+- Roles management
 
 ## Installation
 
