@@ -42,8 +42,19 @@ src/
 ...
 ```
 
+
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Want to contribute? Great!
+Pull requests are allowed ;)
+
+<div align="center"> 
+  
+![](http://ForTheBadge.com/images/badges/built-with-love.svg)
+
+  Angel Díaz | Antonio Rosas | Rodrigo Cruz | Shaden Narvaez | Johan Maye
+  :-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+  [![](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AngelDiazMera/) | [![](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Antonio152/) | [![](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rodrigocrz/) | [![](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Shadenn/) | [![](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Johan07032000/)
+</div>
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
