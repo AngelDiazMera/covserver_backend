@@ -52,6 +52,12 @@ src/
 ```
 
 
+## Related projects:
+
+- Mobile app (Futter): https://github.com/AngelDiazMera/covid-app
+- Back office (ReactJs): https://github.com/AngelDiazMera/covserver_back_office
+
+
 ## Contributing
 Want to contribute? Great!
 Pull requests are allowed ;)
