@@ -1,6 +1,15 @@
 # CovServer API
 
-Monolithic covserver api based on ExpressJs.
+<div>
+   <img alt="TypeScript" src="https://img.shields.io/badge/-TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
+   <img alt="NodeJs" src="https://img.shields.io/badge/NodeJs-43853d?style=for-the-badge&logo=node.js&logoColor=white" />
+   <img alt="ExpressJs" src="https://img.shields.io/badge/ExpressJs-2e2e2e?style=for-the-badge&logo=express&logoColor=white" />
+   <img alt="MongoDb" src="https://img.shields.io/badge/MongoDb-13aa52?style=for-the-badge&logo=mongodb&logoColor=white" />
+   <img alt="Firebase FCM" src="https://img.shields.io/badge/-Firebase FCM-ffc70f?style=for-the-badge&logo=Firebase&logoColor=white" />
+  <img alt="Docker" src="https://img.shields.io/badge/-Docker-46a2f1?style=for-the-badge&logo=docker&logoColor=white" />
+</div>
+
+Covserver backend api based on ExpressJs.
 
 Important features:
 - FCM notifications per time and dynamic areas management
